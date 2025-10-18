@@ -85,7 +85,7 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
                       <span className="font-medium">Admin Wallet:</span>
                       <div className="flex items-center space-x-2 mt-1">
                         {wallet.adminWallet.logo && (
-                          <Image
+                          <Image fill
                             src={wallet.adminWallet.logo}
                             alt={wallet.adminWallet.currency}
                             width={16}
