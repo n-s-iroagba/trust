@@ -5,7 +5,7 @@ import {
   TransactionCreationDto, 
   TransactionResponse 
 } from '../types/transaction';
-
+    
 export class TransactionService {
   static async createTransaction(data: TransactionCreationDto): Promise<TransactionResponse> {
     return ApiService.post<Transaction>(API_ROUTES.TRANSACTIONS.CREATE, data);

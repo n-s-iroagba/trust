@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Shield, Lock, Bell, Cloud, Eye, Search} from 'lucide-react';
+import Image from 'next/image';
 
 export default function TrustWalletHomepage() {
   const [activeTab, setActiveTab] = useState<'mobile' | 'extension'>('mobile');
@@ -283,7 +284,7 @@ export default function TrustWalletHomepage() {
             Zero personal tracking
           </h2>
           <p className="text-center text-gray-700 mb-12 text-lg">
-            We secure your wallet, but don't control or have access to your private keys or secret phrase - only you do.
+            We secure your wallet, but don&apos;t control or have access to your private keys or secret phrase - only you do.
           </p>
 
           <div className="bg-white rounded-3xl p-8 md:p-12 mb-8">
@@ -291,7 +292,7 @@ export default function TrustWalletHomepage() {
               <div>
                 <h3 className="text-3xl font-bold mb-4">True ownership of your crypto assets</h3>
                 <p className="text-gray-600 mb-6">
-                  We secure your wallet, but don't control or have access to your private keys or secret phrase - only you do.
+                  We secure your wallet, but don&apos;t control or have access to your private keys or secret phrase - only you do.
                 </p>
                 <button className="px-8 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition">
                   Get Started
@@ -319,7 +320,7 @@ export default function TrustWalletHomepage() {
                 <Eye className="w-8 h-8 text-blue-600" />
               </div>
               <h4 className="text-xl font-bold mb-2">Zero personal tracking</h4>
-              <p className="text-gray-600">We don't track any personal information, including your IP address or balances.</p>
+              <p className="text-gray-600">We don&apos;t track any personal information, including your IP address or balances.</p>
             </div>
             <div className="bg-white rounded-2xl p-6">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
@@ -406,13 +407,13 @@ export default function TrustWalletHomepage() {
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="rounded-2xl overflow-hidden">
-              <img src="/api/placeholder/400/300" alt="Community member" className="w-full h-64 object-cover" />
+              <Image src="/api/placeholder/400/300" alt="Community member" className="w-full h-64 object-cover" />
             </div>
             <div className="rounded-2xl overflow-hidden">
-              <img src="/api/placeholder/400/300" alt="Community event" className="w-full h-64 object-cover" />
+              <Image src="/api/placeholder/400/300" alt="Community event" className="w-full h-64 object-cover" />
             </div>
             <div className="rounded-2xl overflow-hidden">
-              <img src="/api/placeholder/400/300" alt="Community gathering" className="w-full h-64 object-cover" />
+              <Image src="/api/placeholder/400/300" alt="Community gathering" className="w-full h-64 object-cover" />
             </div>
           </div>
 

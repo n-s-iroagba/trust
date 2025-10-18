@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { AdminWallet } from '../types/adminWallet';
 
 interface AdminWalletListProps {
@@ -53,7 +54,7 @@ export default function AdminWalletList({ wallets, onEdit, onDelete, loading }: 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 {wallet.logo && (
-                  <img
+                  <Image
                     src={wallet.logo}
                     alt={`${wallet.currency} logo`}
                     className="w-10 h-10 rounded-full object-cover"

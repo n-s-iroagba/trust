@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useCallback } from 'react';
 import { AdminWalletService } from '../services/adminWalletService';
 import { AdminWalletCreationDto, AdminWalletUpdateDto } from '../types/adminWallet';

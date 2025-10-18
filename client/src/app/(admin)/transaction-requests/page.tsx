@@ -24,34 +24,64 @@ export default function TransactionRequestsPage() {
     request: null,
     newStatus: 'pending'
   });
+  const [error, setError] = useState<string | null>(null);
+  const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadRequests = async () => {
+      try {
+        setError(null);
+        const response = await getTransactionRequestsByStatus(filter);
+        if (response.success && response.data) {
+          const requestsData = Array.isArray(response.data) ? response.data : [response.data];
+          setRequests(requestsData);
+        } else {
+          setError(response.message || `Failed to load ${filter} transaction requests`);
+        }
+      } catch (err) {
+        console.error('Failed to load transaction requests:', err);
+        setError('An unexpected error occurred while loading transaction requests. Please try again.');
+      }
+    };
+    
     loadRequests();
   }, [filter]);
 
   const loadRequests = async () => {
     try {
+      setError(null);
       const response = await getTransactionRequestsByStatus(filter);
       if (response.success && response.data) {
         const requestsData = Array.isArray(response.data) ? response.data : [response.data];
         setRequests(requestsData);
+      } else {
+        setError(response.message || `Failed to load ${filter} transaction requests`);
       }
     } catch (err) {
       console.error('Failed to load transaction requests:', err);
+      setError('An unexpected error occurred while loading transaction requests. Please try again.');
     }
   };
 
   const handleStatusUpdate = async (requestId: number, status: TransactionRequestStatus) => {
     try {
-      await updateTransactionRequestStatus(requestId, { status });
-      setStatusModal({ isOpen: false, request: null, newStatus: 'pending' });
-      loadRequests();
+      setUpdateError(null);
+      const response = await updateTransactionRequestStatus(requestId, { status });
+      
+      if (response.success) {
+        setStatusModal({ isOpen: false, request: null, newStatus: 'pending' });
+        loadRequests();
+      } else {
+        setUpdateError(response.message || `Failed to update transaction request status to ${status}`);
+      }
     } catch (err) {
-      // Error handled by hook
+      console.error('Failed to update transaction request:', err);
+      setUpdateError('An unexpected error occurred while updating the transaction request. Please try again.');
     }
   };
 
   const openStatusModal = (request: TransactionRequest, newStatus: TransactionRequestStatus) => {
+    setUpdateError(null);
     setStatusModal({
       isOpen: true,
       request,
@@ -60,6 +90,7 @@ export default function TransactionRequestsPage() {
   };
 
   const closeStatusModal = () => {
+    setUpdateError(null);
     setStatusModal({
       isOpen: false,
       request: null,
@@ -67,26 +98,13 @@ export default function TransactionRequestsPage() {
     });
   };
 
-  const getStatusCounts = async () => {
-    const statuses: TransactionRequestStatus[] = ['pending', 'successful', 'failed'];
-    const counts: { [key in TransactionRequestStatus]: number } = {
-      pending: 0,
-      successful: 0,
-      failed: 0
-    };
-
-    // In a real app, you might want to fetch all counts at once
-    // For now, we'll just show the current filter count
-    return counts;
+  const clearError = () => {
+    setError(null);
+    setUpdateError(null);
   };
 
-  const getStatusColor = (status: TransactionRequestStatus) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'successful': return 'bg-pastel-green bg-opacity-20 text-green-800 border-green-200';
-      case 'failed': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const retryLoadRequests = () => {
+    loadRequests();
   };
 
   const getStatusIcon = (status: TransactionRequestStatus) => {
@@ -115,6 +133,47 @@ export default function TransactionRequestsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Error Messages */}
+        {(error || updateError) && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    {error ? 'Load Error' : 'Update Error'}
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    {error || updateError}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={clearError}
+                className="text-red-400 hover:text-red-600 transition-colors"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            {error && (
+              <div className="mt-3">
+                <button
+                  onClick={retryLoadRequests}
+                  className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+                >
+                  Retry Loading
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -223,6 +282,7 @@ export default function TransactionRequestsPage() {
           request={statusModal.request}
           newStatus={statusModal.newStatus}
           loading={loading}
+     
         />
       </div>
     </div>

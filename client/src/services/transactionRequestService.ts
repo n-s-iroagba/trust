@@ -6,7 +6,7 @@ import {
   UpdateStatusDto, 
   TransactionRequestResponse 
 } from '../types/transactionRequest';
-
+    
 export class TransactionRequestService {
   static async createTransactionRequest(data: TransactionRequestCreationDto): Promise<TransactionRequestResponse> {
     return ApiService.post<TransactionRequest>(API_ROUTES.TRANSACTION_REQUESTS.CREATE, data);

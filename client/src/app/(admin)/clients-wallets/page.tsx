@@ -29,72 +29,128 @@ export default function ClientWalletsPage() {
     isOpen: false,
     wallet: null,
   });
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Clear messages after 5 seconds
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError(null);
+        setSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
+
+  const loadData = async () => {
+    try {
+      setError(null);
+      await Promise.all([loadWallets(), loadAdminWallets()]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
+      setError(errorMessage);
+      console.error('Failed to load data:', err);
+    }
+  };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      await Promise.all([loadWallets(), loadAdminWallets()]);
-    } catch (err) {
-      console.error('Failed to load data:', err);
-    }
-  };
-
   const loadWallets = async () => {
     try {
+      setError(null);
       const response = await getAllClientWallets();
       if (response.success && response.data) {
         const walletsData = Array.isArray(response.data) ? response.data : [response.data];
         setWallets(walletsData);
+      } else {
+        setError(response.message || 'Failed to load wallets');
       }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load wallets';
+      setError(errorMessage);
       console.error('Failed to load wallets:', err);
     }
   };
 
   const loadAdminWallets = async () => {
     try {
+      setError(null);
       const response = await getAllAdminWallets();
       if (response.success && response.data) {
         const adminWalletsData = Array.isArray(response.data) ? response.data : [response.data];
         setAdminWallets(adminWalletsData);
+      } else {
+        setError(response.message || 'Failed to load admin wallets');
       }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load admin wallets';
+      setError(errorMessage);
       console.error('Failed to load admin wallets:', err);
     }
   };
 
   const handleCreateWallet = async (data: ClientWalletCreationDto) => {
     try {
-      await createClientWallet(data);
-      setShowCreateForm(false);
-      loadWallets();
+      setError(null);
+      setSuccess(null);
+      const response = await createClientWallet(data);
+      
+      if (response.success) {
+        setSuccess('Wallet created successfully!');
+        setShowCreateForm(false);
+        await loadWallets();
+      } else {
+        setError(response.message || 'Failed to create wallet');
+      }
     } catch (err) {
-      // Error handled by hook
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet';
+      setError(errorMessage);
+      console.error('Failed to create wallet:', err);
     }
   };
 
   const handleCredit = async (walletId: number, data: CreditDebitDto) => {
     try {
-      await creditWallet(walletId, data);
-      setShowCreditDebitModal(false);
-      setSelectedWallet(null);
-      loadWallets();
+      setError(null);
+      setSuccess(null);
+      const response = await creditWallet(walletId, data);
+      
+      if (response.success) {
+        setSuccess('Wallet credited successfully!');
+        setShowCreditDebitModal(false);
+        setSelectedWallet(null);
+        await loadWallets();
+      } else {
+        setError(response.message || 'Failed to credit wallet');
+      }
     } catch (err) {
-      // Error handled by hook
+      const errorMessage = err instanceof Error ? err.message : 'Failed to credit wallet';
+      setError(errorMessage);
+      console.error('Failed to credit wallet:', err);
     }
   };
 
   const handleDebit = async (walletId: number, data: CreditDebitDto) => {
     try {
-      await debitWallet(walletId, data);
-      setShowCreditDebitModal(false);
-      setSelectedWallet(null);
-      loadWallets();
+      setError(null);
+      setSuccess(null);
+      const response = await debitWallet(walletId, data);
+      
+      if (response.success) {
+        setSuccess('Wallet debited successfully!');
+        setShowCreditDebitModal(false);
+        setSelectedWallet(null);
+        await loadWallets();
+      } else {
+        setError(response.message || 'Failed to debit wallet');
+      }
     } catch (err) {
-      // Error handled by hook
+      const errorMessage = err instanceof Error ? err.message : 'Failed to debit wallet';
+      setError(errorMessage);
+      console.error('Failed to debit wallet:', err);
     }
   };
 
@@ -112,9 +168,61 @@ export default function ClientWalletsPage() {
     setShowCreateForm(false);
   };
 
+  const dismissError = () => {
+    setError(null);
+  };
+
+  const dismissSuccess = () => {
+    setSuccess(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-red-800 font-medium">Error: {error}</span>
+              </div>
+              <button
+                onClick={dismissError}
+                className="text-red-400 hover:text-red-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-green-800 font-medium">Success: {success}</span>
+              </div>
+              <button
+                onClick={dismissSuccess}
+                className="text-green-400 hover:text-green-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -252,7 +360,7 @@ export default function ClientWalletsPage() {
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-primary">
-                    Manage {selectedWallet.clientId}'s Wallet
+                    Manage {selectedWallet.clientId}&apos;s Wallet
                   </h3>
                   <button
                     onClick={handleCancelManage}
