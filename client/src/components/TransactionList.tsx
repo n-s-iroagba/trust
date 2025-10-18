@@ -82,7 +82,7 @@ export default function TransactionList({ transactions, onDelete, loading }: Tra
                       <div className="flex items-center space-x-2">
                         {transaction.adminWallet.logo && (
                           <Image fill
-                            fill
+                        
                             src={transaction.adminWallet.logo}
                             alt={transaction.adminWallet.currency}
                             className="w-4 h-4 rounded-full"
