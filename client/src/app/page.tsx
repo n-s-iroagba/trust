@@ -34,33 +34,33 @@ export default function TrustWalletHomepage() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                True crypto ownership. Powerful Web3 experiences
-              </h1>
-              <p className="text-lg text-gray-600 mb-8">
-                Unlock the power of your cryptocurrency assets and explore the world of Web3 with Trust Wallet.
-              </p>
-       <div className="flex flex-col sm:flex-row gap-4">
-  <Link 
-    href="/auth/register" 
-    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2"
-  >
-    <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
-    Create Account
-  </Link>
-  <Link 
-    href="/auth/login" 
-    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2"
-  >
-    <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
-    Login
-  </Link>
-</div>
-            </div>
+<section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+  <div className="max-w-7xl mx-auto">
+    <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          True crypto ownership. Powerful Web3 experiences
+        </h1>
+        <p className="text-lg text-gray-600 mb-8">
+          Unlock the power of your cryptocurrency assets and explore the world of Web3 with Trust Wallet.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={() => router.push('/auth/register')}
+            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+            Create Account
+          </button>
+          <button
+            onClick={() => router.push('/auth/login')}
+            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+            Login
+          </button>
+        </div>
+      </div>
             <div className="relative">
               <div className="relative z-10 flex items-center justify-center gap-4">
                 <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
