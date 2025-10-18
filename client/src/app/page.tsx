@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Bell, Cloud, Eye, Search} from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function TrustWalletHomepage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'mobile' | 'extension'>('mobile');
 
 
@@ -41,16 +44,22 @@ export default function TrustWalletHomepage() {
               <p className="text-lg text-gray-600 mb-8">
                 Unlock the power of your cryptocurrency assets and explore the world of Web3 with Trust Wallet.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
-                  Download Mobile App
-                </button>
-                <button className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
-                  Download Extension
-                </button>
-              </div>
+       <div className="flex flex-col sm:flex-row gap-4">
+  <Link 
+    href="/auth/register" 
+    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2"
+  >
+    <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+    Create Account
+  </Link>
+  <Link 
+    href="/auth/login" 
+    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2"
+  >
+    <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+    Login
+  </Link>
+</div>
             </div>
             <div className="relative">
               <div className="relative z-10 flex items-center justify-center gap-4">
@@ -407,13 +416,13 @@ export default function TrustWalletHomepage() {
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="rounded-2xl overflow-hidden">
-              <Image src="/api/placeholder/400/300" alt="Community member" className="w-full h-64 object-cover" />
+              <Image fill src="/api/placeholder/400/300" alt="Community member" className="w-full h-64 object-cover" />
             </div>
             <div className="rounded-2xl overflow-hidden">
-              <Image src="/api/placeholder/400/300" alt="Community event" className="w-full h-64 object-cover" />
+              <Image fill src="/api/placeholder/400/300" alt="Community event" className="w-full h-64 object-cover" />
             </div>
             <div className="rounded-2xl overflow-hidden">
-              <Image src="/api/placeholder/400/300" alt="Community gathering" className="w-full h-64 object-cover" />
+              <Image fill src="/api/placeholder/400/300" alt="Community gathering" className="w-full h-64 object-cover" />
             </div>
           </div>
 

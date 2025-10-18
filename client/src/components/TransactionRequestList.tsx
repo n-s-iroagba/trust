@@ -132,7 +132,7 @@ export default function TransactionRequestList({
                       <span className="font-medium text-gray-700">Admin Wallet:</span>
                       <div className="flex items-center space-x-2 mt-1">
                         {request.clientWallet.adminWallet.logo && (
-                          <Image
+                          <Image fill
                           fill
                             src={request.clientWallet.adminWallet.logo}
                             alt={request.clientWallet.adminWallet.currency}
