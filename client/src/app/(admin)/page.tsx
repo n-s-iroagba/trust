@@ -18,14 +18,54 @@ export default function AdminDashboard() {
   const [clientWallets, setClientWallets] = useState<ClientWallet[]>([]);
   const [pendingRequests, setPendingRequests] = useState<TransactionRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [adminWalletsRes, clientWalletsRes, pendingRequestsRes] = await Promise.all([
+          getAllAdminWallets(),
+          getAllClientWallets(),
+          getTransactionRequestsByStatus('pending')
+        ]);
+
+        // Handle admin wallets response
+        if (adminWalletsRes.success && adminWalletsRes.data) {
+          setAdminWallets(Array.isArray(adminWalletsRes.data) ? adminWalletsRes.data : [adminWalletsRes.data]);
+        } else {
+          throw new Error(adminWalletsRes.message || 'Failed to load admin wallets');
+        }
+
+        // Handle client wallets response
+        if (clientWalletsRes.success && clientWalletsRes.data) {
+          setClientWallets(Array.isArray(clientWalletsRes.data) ? clientWalletsRes.data : [clientWalletsRes.data]);
+        } else {
+          throw new Error(clientWalletsRes.message || 'Failed to load client wallets');
+        }
+
+        // Handle pending requests response
+        if (pendingRequestsRes.success && pendingRequestsRes.data) {
+          setPendingRequests(Array.isArray(pendingRequestsRes.data) ? pendingRequestsRes.data : [pendingRequestsRes.data]);
+        } else {
+          throw new Error(pendingRequestsRes.message || 'Failed to load pending requests');
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load dashboard data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadDashboardData();
   }, []);
 
-  const loadDashboardData = async () => {
+  const retryLoadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [adminWalletsRes, clientWalletsRes, pendingRequestsRes] = await Promise.all([
         getAllAdminWallets(),
         getAllClientWallets(),
@@ -44,7 +84,8 @@ export default function AdminDashboard() {
         setPendingRequests(Array.isArray(pendingRequestsRes.data) ? pendingRequestsRes.data : [pendingRequestsRes.data]);
       }
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error('Failed to retry loading dashboard data:', error);
+      setError('Failed to load data. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -80,6 +121,79 @@ export default function AdminDashboard() {
     </Link>
   );
 
+  // Error state display
+  if (error && !loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Error Message */}
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-lg font-medium text-red-800">Unable to Load Dashboard</h3>
+                <p className="text-red-700 mt-2">{error}</p>
+                <div className="mt-4">
+                  <button
+                    onClick={retryLoadData}
+                    className="bg-red-100 text-red-800 px-4 py-2 rounded-md hover:bg-red-200 transition-colors font-medium"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Fallback minimal dashboard */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-2">Welcome back, Admin! Some data may not be available.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <StatCard
+              title="Admin Wallets"
+              value="N/A"
+              change="Data unavailable"
+              icon="👛"
+              color="bg-gray-100 text-gray-600"
+              href="/admin-wallets"
+            />
+            <StatCard
+              title="Client Wallets"
+              value="N/A"
+              change="Data unavailable"
+              icon="👥"
+              color="bg-gray-100 text-gray-600"
+              href="/client-wallets"
+            />
+            <StatCard
+              title="Pending Requests"
+              value="N/A"
+              change="Data unavailable"
+              icon="📋"
+              color="bg-gray-100 text-gray-600"
+              href="/transaction-requests"
+            />
+            <StatCard
+              title="Transactions"
+              value="N/A"
+              change="Data unavailable"
+              icon="💸"
+              color="bg-gray-100 text-gray-600"
+              href="/transactions"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -106,7 +220,7 @@ export default function AdminDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back, Admin! Here's what's happening today.</p>
+          <p className="text-gray-600 mt-2">Welcome back, Admin! Here&apos;s what&apos;s happening today.</p>
         </div>
 
         {/* Stats Grid */}

@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { Transaction } from '../types/transaction';
 
@@ -80,7 +81,8 @@ export default function TransactionList({ transactions, onDelete, loading }: Tra
                       <span className="font-medium">Admin Wallet:</span>
                       <div className="flex items-center space-x-2">
                         {transaction.adminWallet.logo && (
-                          <img
+                          <Image
+                            fill
                             src={transaction.adminWallet.logo}
                             alt={transaction.adminWallet.currency}
                             className="w-4 h-4 rounded-full"

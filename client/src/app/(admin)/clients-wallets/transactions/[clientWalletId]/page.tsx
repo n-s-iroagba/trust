@@ -18,39 +18,60 @@ export default function ClientWalletTransactionsPage() {
     isOpen: false,
     transaction: null,
   });
+  const [error, setError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        setError(null);
+        const response = await getTransactionsByClientWalletId(clientWalletId);
+        if (response.success && response.data) {
+          const transactionsData = Array.isArray(response.data) ? response.data : [response.data];
+          setTransactions(transactionsData);
+        } else {
+          setError(response.message || 'Failed to load transactions');
+        }
+      } catch (err) {
+        console.error('Failed to load transactions:', err);
+        setError('An unexpected error occurred while loading transactions. Please try again.');
+      }
+    };
+
     if (clientWalletId) {
       loadTransactions();
     }
   }, [clientWalletId]);
 
-  const loadTransactions = async () => {
-    try {
-      const response = await getTransactionsByClientWalletId(clientWalletId);
-      if (response.success && response.data) {
-        const transactionsData = Array.isArray(response.data) ? response.data : [response.data];
-        setTransactions(transactionsData);
-      }
-    } catch (err) {
-      console.error('Failed to load transactions:', err);
-    }
-  };
-
   const handleDeleteTransaction = async () => {
     if (!deleteModal.transaction) return;
 
     try {
+      setDeleteError(null);
       await deleteTransaction(deleteModal.transaction.id);
       setDeleteModal({ isOpen: false, transaction: null });
-      loadTransactions();
+      
+      // Reload transactions after successful deletion
+      const response = await getTransactionsByClientWalletId(clientWalletId);
+      if (response.success && response.data) {
+        const transactionsData = Array.isArray(response.data) ? response.data : [response.data];
+        setTransactions(transactionsData);
+      } else {
+        setError(response.message || 'Failed to reload transactions after deletion');
+      }
     } catch (err) {
-      // Error handled by hook
+      setDeleteError('Failed to delete transaction. Please try again.');
+      console.error('Failed to delete transaction:', err);
     }
   };
 
   const handleBack = () => {
     router.back();
+  };
+
+  const clearError = () => {
+    setError(null);
+    setDeleteError(null);
   };
 
   if (isNaN(clientWalletId)) {
@@ -75,6 +96,47 @@ export default function ClientWalletTransactionsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Error Messages */}
+        {(error || deleteError) && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    {error ? 'Load Error' : 'Delete Error'}
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    {error || deleteError}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={clearError}
+                className="text-red-400 hover:text-red-600 transition-colors"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            {error && (
+              <div className="mt-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -185,6 +247,7 @@ export default function ClientWalletTransactionsPage() {
           title="Delete Transaction"
           message="Are you sure you want to delete this transaction? This will also adjust the client wallet balance and cannot be undone."
           loading={loading}
+   
         />
       </div>
     </div>

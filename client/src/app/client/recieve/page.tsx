@@ -1,3 +1,4 @@
+'use client'
 import { useState } from 'react';
 import { Copy, ChevronLeft, QrCode, Share2 } from 'lucide-react';
 

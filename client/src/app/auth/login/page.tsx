@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+'use client'
+import { useState} from 'react';
 import { ChevronLeft, Eye, EyeOff, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -44,19 +45,9 @@ export default function LoginPage() {
 
     // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock authentication
-      if (email === 'demo@example.com' && password === 'password') {
-        setSuccess(true);
-        // Simulate successful login and redirect
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      } else {
-        setError('Invalid email or password');
-      }
     } catch (err) {
+      console.error('login error occured', err)
       setError('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -86,9 +77,7 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto w-full space-y-8">
           {/* Logo and Welcome */}
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">TX</span>
-            </div>
+        
             <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
             <p className="text-gray-600">Sign in to your TrustXWallet account</p>
           </div>
@@ -218,7 +207,7 @@ export default function LoginPage() {
           {/* Create Account Link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button
                 onClick={handleCreateAccount}
                 className="text-blue-600 font-semibold hover:text-blue-700 transition"

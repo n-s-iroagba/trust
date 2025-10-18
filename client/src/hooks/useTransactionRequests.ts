@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useCallback } from 'react';
 import { TransactionRequestService } from '../services/transactionRequestService';
 import {TransactionRequestCreationDto, UpdateStatusDto } from '../types/transactionRequest';
