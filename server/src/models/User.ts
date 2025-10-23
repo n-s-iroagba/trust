@@ -7,12 +7,9 @@ import {Role} from '../types/auth.types'
 
 interface UserAttributes {
   id: number
-  username: string
   email: string
   password: string
   role: Role
-  signInCode:string
-  phrase12Word:string[]
   isEmailVerified: boolean
   verificationCode?: string | null
   verificationToken?: string | null
@@ -30,8 +27,6 @@ export interface UserCreationAttributes
     | 'verificationCode'
     | 'verificationToken'
     | 'passwordResetToken'
-    | 'signInCode'
-    | 'phrase12Word'
     | 'role'
     | 'createdAt'
     | 'refreshToken'
@@ -76,14 +71,8 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-       signInCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-       phrase12Word: {
-      type: DataTypes.JSON,
-      allowNull: false,
-    },
+
+   
     isEmailVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -106,14 +95,10 @@ User.init(
       allowNull: true,
     },
 
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     role: {
       type: DataTypes.ENUM(...Object.values(Role)),
       allowNull: false,
-    },
+    }
       },
 
   

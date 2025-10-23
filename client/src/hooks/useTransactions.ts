@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { TransactionService } from '../services/transactionService';
-import {TransactionCreationDto } from '../types/transaction';
+import {Transaction, TransactionCreationDto } from '../types/transaction';
 
 
 export const useTransactions = () => {
@@ -23,11 +23,11 @@ export const useTransactions = () => {
     }
   }, []);
 
-  const getAllTransactions = useCallback(async () => {
+  const getPendingTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await TransactionService.getAllTransactions();
+      const response = await TransactionService.getPendingTransactions();
       return response;
     } catch (err: any) {
       setError(err.message);
@@ -37,11 +37,25 @@ export const useTransactions = () => {
     }
   }, []);
 
-  const getTransactionById = useCallback(async (id: number) => {
+  const updateTransaction = useCallback(async (id: number,data:Partial<Transaction>) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await TransactionService.getTransactionById(id);
+      const response = await TransactionService.updateTransaction(id,data);
+      return response;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getTransactionsByClientId = useCallback(async (clientWalletId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await TransactionService.getTransactionsByClientId(clientWalletId);
       return response;
     } catch (err: any) {
       setError(err.message);
@@ -65,19 +79,6 @@ export const useTransactions = () => {
     }
   }, []);
 
-  const getTransactionsByAdminWalletId = useCallback(async (adminWalletId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await TransactionService.getTransactionsByAdminWalletId(adminWalletId);
-      return response;
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const deleteTransaction = useCallback(async (id: number) => {
     setLoading(true);
@@ -96,11 +97,11 @@ export const useTransactions = () => {
   return {
     loading,
     error,
+    getTransactionsByClientId,
     createTransaction,
-    getAllTransactions,
-    getTransactionById,
+    updateTransaction,
+    getPendingTransactions,
     getTransactionsByClientWalletId,
-    getTransactionsByAdminWalletId,
     deleteTransaction,
   };
 };

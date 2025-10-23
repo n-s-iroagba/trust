@@ -23,12 +23,14 @@ export abstract class BaseRepository<T extends Model> {
     return this.model.create(data, options);
   }
 
-  async update(data: any, options: UpdateOptions): Promise<[number, T[]]> {
+  async update(data: any, options: UpdateOptions) {
     return this.model.update(data, options);
   }
 
-  async delete(options: DestroyOptions): Promise<number> {
-    return this.model.destroy(options);
+  async delete(id:string|number){
+    const destroy = await this.model.findByPk(id)
+    await destroy?.destroy()
+    return true
   }
 
   async count(options?: FindOptions): Promise<number> {

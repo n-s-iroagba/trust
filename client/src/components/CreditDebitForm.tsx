@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CreditDebitDto } from '../types/clientWallet';
-import { AdminWallet } from '../types/adminWallet';
-import { useAdminWallets } from '../hooks/useAdminWallets';
 
 interface CreditDebitFormProps {
   walletId: number;
@@ -22,43 +20,15 @@ export default function CreditDebitForm({
   loading,
   error: parentError 
 }: CreditDebitFormProps) {
-  const { getAllAdminWallets } = useAdminWallets();
-  const [adminWallets, setAdminWallets] = useState<AdminWallet[]>([]);
-  const [walletsLoading, setWalletsLoading] = useState(true);
-  const [walletsError, setWalletsError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<CreditDebitDto>({
     amountInUSD: 0,
-    adminWalletId: 0,
+
   });
   const [operation, setOperation] = useState<'credit' | 'debit'>('credit');
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAdminWallets = async () => {
-      try {
-        setWalletsLoading(true);
-        setWalletsError(null);
-        const response = await getAllAdminWallets();
-        if (response.success && response.data) {
-          const wallets = Array.isArray(response.data) ? response.data : [response.data];
-          setAdminWallets(wallets);
-          // Set the first admin wallet as default if available
-          if (wallets.length > 0 && formData.adminWalletId === 0) {
-            setFormData(prev => ({ ...prev, adminWalletId: wallets[0].id }));
-          }
-        } else {
-          setWalletsError(response.message || 'Failed to load admin wallets. Please try again.');
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin wallets:', error);
-        setWalletsError('An unexpected error occurred while loading admin wallets. Please try again.');
-      } finally {
-        setWalletsLoading(false);
-      }
-    };
 
-    fetchAdminWallets();
-  }, [getAllAdminWallets]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,10 +39,7 @@ export default function CreditDebitForm({
       return;
     }
 
-    if (formData.adminWalletId === 0) {
-      setFormError('Please select an admin wallet.');
-      return;
-    }
+
 
     try {
       setFormError(null);
@@ -81,7 +48,7 @@ export default function CreditDebitForm({
       } else {
         await onDebit(walletId, formData);
       }
-      setFormData({ amountInUSD: 0, adminWalletId: adminWallets[0]?.id || 0 });
+      setFormData({ amountInUSD: 0 });
     } catch (err) {
       // Error handled by parent
       console.error('Form submission error:', err);
@@ -109,34 +76,10 @@ export default function CreditDebitForm({
 
   const clearError = () => {
     setFormError(null);
-    setWalletsError(null);
+
   };
 
-  const retryLoadWallets = () => {
-    const fetchAdminWallets = async () => {
-      try {
-        setWalletsLoading(true);
-        setWalletsError(null);
-        const response = await getAllAdminWallets();
-        if (response.success && response.data) {
-          const wallets = Array.isArray(response.data) ? response.data : [response.data];
-          setAdminWallets(wallets);
-          if (wallets.length > 0 && formData.adminWalletId === 0) {
-            setFormData(prev => ({ ...prev, adminWalletId: wallets[0].id }));
-          }
-        } else {
-          setWalletsError(response.message || 'Failed to load admin wallets. Please try again.');
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin wallets:', error);
-        setWalletsError('An unexpected error occurred while loading admin wallets. Please try again.');
-      } finally {
-        setWalletsLoading(false);
-      }
-    };
 
-    fetchAdminWallets();
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -145,7 +88,7 @@ export default function CreditDebitForm({
       </h2>
 
       {/* Error Messages */}
-      {(parentError || formError || walletsError) && (
+      {(parentError || formError) && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center">
@@ -156,10 +99,10 @@ export default function CreditDebitForm({
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">
-                  {walletsError ? 'Load Error' : parentError ? 'Transaction Error' : 'Form Error'}
+                  { parentError ? 'Transaction Error' : 'Form Error'}
                 </h3>
                 <p className="text-sm text-red-700 mt-1">
-                  {walletsError || parentError || formError}
+                  { parentError || formError}
                 </p>
               </div>
             </div>
@@ -172,16 +115,7 @@ export default function CreditDebitForm({
               </svg>
             </button>
           </div>
-          {walletsError && (
-            <div className="mt-3">
-              <button
-                onClick={retryLoadWallets}
-                className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
-              >
-                Retry Loading Wallets
-              </button>
-            </div>
-          )}
+  
         </div>
       )}
 
@@ -228,41 +162,12 @@ export default function CreditDebitForm({
           />
         </div>
 
-        <div>
-          <label htmlFor="adminWalletId" className="block text-sm font-medium text-gray-700 mb-1">
-            Admin Wallet *
-          </label>
-          {walletsLoading ? (
-            <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 animate-pulse">
-              Loading admin wallets...
-            </div>
-          ) : adminWallets.length === 0 ? (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
-              No admin wallets available. Please create an admin wallet first.
-            </div>
-          ) : (
-            <select
-              id="adminWalletId"
-              name="adminWalletId"
-              value={formData.adminWalletId}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="">Select Admin Wallet</option>
-              {adminWallets.map((wallet) => (
-                <option key={wallet.id} value={wallet.id}>
-                  {wallet.currency} ({wallet.currencyAbbreviation}) - {wallet.address}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+   
 
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={loading || walletsLoading || adminWallets.length === 0}
+            disabled={loading}
             className={`flex-1 py-2 px-4 rounded-md text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
               operation === 'credit'
                 ? 'bg-pastel-green hover:bg-green-600 focus:ring-pastel-green'

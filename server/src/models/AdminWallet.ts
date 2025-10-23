@@ -5,7 +5,8 @@ interface AdminWalletAttributes {
   id: number;
   currencyAbbreviation: string;
   logo: string;
-  address: string;
+  clientReceivingAddress:string
+ 
   currency: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -16,8 +17,9 @@ interface AdminWalletCreationAttributes extends Optional<AdminWalletAttributes, 
 class AdminWallet extends Model<AdminWalletAttributes, AdminWalletCreationAttributes> implements AdminWalletAttributes {
   public id!: number;
   public currencyAbbreviation!: string;
+  public clientReceivingAddress!:string;
+  public address!:string;
   public logo!: string;
-  public address!: string;
   public currency!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -38,11 +40,7 @@ AdminWallet.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
+ 
     currency: {
       type: DataTypes.STRING(50),
       allowNull: false,
@@ -57,7 +55,17 @@ AdminWallet.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+  clientReceivingAddress: { 
+      type: DataTypes.STRING,
+      allowNull: false,
+  
   },
+    address: { 
+      type: DataTypes.STRING,
+      allowNull: false,
+  
+  },
+},
   {
     sequelize,
     modelName: 'AdminWallet',

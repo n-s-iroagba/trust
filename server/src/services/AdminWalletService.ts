@@ -7,13 +7,17 @@ import { ValidationHelpers } from './utils/validationHelpers';
 export interface AdminWalletCreationDto {
   currencyAbbreviation: string;
   logo: string;
+  clientReceivingAddress:string
+ 
   currency: string;
 }
 
 export interface AdminWalletUpdateDto {
   currencyAbbreviation?: string;
   logo?: string;
-  currency?: string;
+  clientReceivingAddress:string
+ 
+  currency: string;
 }
 
 export class AdminWalletService {
@@ -112,11 +116,9 @@ export class AdminWalletService {
         throw new ConflictError('Cannot delete admin wallet with existing client wallets');
       }
 
-      const deletedCount = await this.adminWalletRepository.delete({ where: { id } });
+      const deletedCount = await this.adminWalletRepository.delete(id)
       
-      if (deletedCount === 0) {
-        throw new AppError('Failed to delete admin wallet');
-      }
+
 
       logger.info(`Admin wallet deleted: ${id}`);
       return { message: 'Admin wallet deleted successfully' };

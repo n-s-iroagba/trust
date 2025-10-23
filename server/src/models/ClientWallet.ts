@@ -1,6 +1,7 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from './index';
 import AdminWallet from './AdminWallet';
+import Client from './Client';
 
 interface ClientWalletAttributes {
   id: number;
@@ -73,6 +74,6 @@ ClientWallet.init(
 
 // Define associations
 ClientWallet.belongsTo(AdminWallet, { foreignKey: 'adminWalletId', as: 'adminWallet' });
-AdminWallet.hasMany(ClientWallet, { foreignKey: 'adminWalletId', as: 'clientWallets' });
+Client.hasMany(ClientWallet, { foreignKey: 'client', as: 'clientWallets' });
 
 export default ClientWallet;

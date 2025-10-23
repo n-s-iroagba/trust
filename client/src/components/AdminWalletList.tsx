@@ -10,13 +10,21 @@ interface AdminWalletListProps {
   loading?: boolean;
 }
 
-export default function AdminWalletList({ wallets, onEdit, onDelete, loading }: AdminWalletListProps) {
+export default function AdminWalletList({
+  wallets,
+  onEdit,
+  onDelete,
+  loading,
+}: AdminWalletListProps) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
               <div className="space-y-2">
                 <div className="h-4 bg-gray-200 rounded w-32"></div>
                 <div className="h-3 bg-gray-200 rounded w-24"></div>
@@ -29,16 +37,30 @@ export default function AdminWalletList({ wallets, onEdit, onDelete, loading }: 
     );
   }
 
-  if (wallets.length === 0) {
+  if (!wallets || wallets.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-8 text-center">
         <div className="text-gray-400 mb-4">
-          <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          <svg
+            className="w-16 h-16 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+            />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Admin Wallets</h3>
-        <p className="text-gray-500">Get started by creating your first admin wallet.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          No Admin Wallets
+        </h3>
+        <p className="text-gray-500">
+          Get started by creating your first admin wallet.
+        </p>
       </div>
     );
   }
@@ -48,17 +70,24 @@ export default function AdminWalletList({ wallets, onEdit, onDelete, loading }: 
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-primary">Admin Wallets</h2>
       </div>
+
       <div className="divide-y divide-gray-200">
         {wallets.map((wallet) => (
-          <div key={wallet.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+          <div
+            key={wallet.id}
+            className="px-6 py-4 hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 {wallet.logo && (
-                  <Image fill
-                    src={wallet.logo}
-                    alt={`${wallet.currency} logo`}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                  <div className="relative w-10 h-10">
+                    <Image
+                      src={wallet.logo}
+                      alt={`${wallet.currency} logo`}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
                 )}
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">
@@ -67,8 +96,12 @@ export default function AdminWalletList({ wallets, onEdit, onDelete, loading }: 
                   <p className="text-sm text-gray-500">
                     {wallet.currencyAbbreviation} • {wallet.address}
                   </p>
+                  <p className="text-xs text-gray-400 break-all">
+                    Client Receiving Address: {wallet.clientReceivingAddress}
+                  </p>
                 </div>
               </div>
+
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => onEdit(wallet)}

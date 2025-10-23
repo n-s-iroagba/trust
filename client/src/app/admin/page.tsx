@@ -7,16 +7,18 @@ import { useClientWallets } from '../../hooks/useClientWallets';
 import { useTransactionRequests } from '../../hooks/useTransactionRequests';
 import { AdminWallet } from '../../types/adminWallet';
 import { ClientWallet } from '../../types/clientWallet';
-import { TransactionRequest } from '../../types/transactionRequest';
+import { Transaction } from '@/types';
+import { useTransactions } from '@/hooks/useTransactions';
+
 
 export default function AdminDashboard() {
   const { getAllAdminWallets } = useAdminWallets();
   const { getAllClientWallets } = useClientWallets();
-  const { getTransactionRequestsByStatus } = useTransactionRequests();
+  const {getPendingTransactions} = useTransactions()
 
   const [adminWallets, setAdminWallets] = useState<AdminWallet[]>([]);
   const [clientWallets, setClientWallets] = useState<ClientWallet[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<TransactionRequest[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +30,7 @@ export default function AdminDashboard() {
         const [adminWalletsRes, clientWalletsRes, pendingRequestsRes] = await Promise.all([
           getAllAdminWallets(),
           getAllClientWallets(),
-          getTransactionRequestsByStatus('pending')
+          getPendingTransactions()
         ]);
 
         // Handle admin wallets response
@@ -69,7 +71,7 @@ export default function AdminDashboard() {
       const [adminWalletsRes, clientWalletsRes, pendingRequestsRes] = await Promise.all([
         getAllAdminWallets(),
         getAllClientWallets(),
-        getTransactionRequestsByStatus('pending')
+        getPendingTransactions
       ]);
 
       if (adminWalletsRes.success && adminWalletsRes.data) {
@@ -80,9 +82,7 @@ export default function AdminDashboard() {
         setClientWallets(Array.isArray(clientWalletsRes.data) ? clientWalletsRes.data : [clientWalletsRes.data]);
       }
 
-      if (pendingRequestsRes.success && pendingRequestsRes.data) {
-        setPendingRequests(Array.isArray(pendingRequestsRes.data) ? pendingRequestsRes.data : [pendingRequestsRes.data]);
-      }
+    
     } catch (error) {
       console.error('Failed to retry loading dashboard data:', error);
       setError('Failed to load data. Please check your connection and try again.');
