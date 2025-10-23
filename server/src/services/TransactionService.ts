@@ -4,6 +4,10 @@ import { CalculationHelpers } from './utils/calculationHelpers';
 import { ValidationHelpers } from './utils/validationHelpers';
 import { AppError, NotFoundError } from './errors/AppError';
 import logger from './logger/winstonLogger';
+interface UpdateStatusDto{
+  status: 'successful' | 'failed'
+}
+import { ClientWalletService } from './ClientWalletService';
 
 export interface TransactionCreationDto {
   amountInUSD: number;
@@ -14,6 +18,7 @@ export interface TransactionCreationDto {
 export class TransactionService {
   private transactionRepository: TransactionRepository;
   private clientWalletRepository: ClientWalletRepository;
+  private clientWalletService: ClientWalletService;
 
   constructor() {
     this.transactionRepository = new TransactionRepository();
@@ -41,42 +46,31 @@ export class TransactionService {
     }
   }
 
-  async getAllTransactionsWithAdminWalletByClientWalletId(clientWalletId: number) {
-    try {
-      return await this.transactionRepository.findAllWithAdminWalletByClientWalletId(clientWalletId);
-    } catch (error) {
-      logger.error('Error fetching transactions by client wallet ID:', error);
-      throw error;
-    }
-  }
 
-  async getAllTransactionsByAdminWalletId(adminWalletId: number) {
-    try {
-      return await this.transactionRepository.findAllByAdminWalletIdWithClientWalletAndAdminWallet(adminWalletId);
-    } catch (error) {
-      logger.error('Error fetching transactions by admin wallet ID:', error);
-      throw error;
-    }
-  }
 
-  async getAllTransactions() {
+  async updateTransactionStatus(id: number, updateDto: UpdateStatusDto) {
     try {
-      return await this.transactionRepository.findAllWithAssociations();
-    } catch (error) {
-      logger.error('Error fetching all transactions:', error);
-      throw error;
-    }
-  }
-
-  async getTransactionById(id: number) {
-    try {
-      const transaction = await this.transactionRepository.findByIdWithAssociations(id);
-      if (!transaction) {
-        throw new NotFoundError('Transaction');
+      if (!ValidationHelpers.isValidStatus(updateDto.status)) {
+        throw new AppError('Invalid status', 400);
       }
-      return transaction;
+
+      const transaction = await this.transactionRepository.findById(id);
+      if (!transaction) {
+        throw new NotFoundError('Transaction request');
+      }
+
+      if (transaction.status === updateDto.status) {
+        return transaction;
+      }
+
+      if (updateDto.status === 'successful') {
+        await this.clientWalletService.creditWallet(transaction.clientWalletId,transaction.amountInUSD);
+      }
+
+     await transaction.update({status:updateDto.status})
+    
     } catch (error) {
-      logger.error('Error fetching transaction by id:', error);
+      logger.error('Error updating transaction request status:', error);
       throw error;
     }
   }
@@ -101,9 +95,9 @@ export class TransactionService {
 
       await this.clientWalletRepository.updateWalletBalance(transaction.clientWalletId, newBalance);
 
-      const deletedCount = await this.transactionRepository.delete({ where: { id } });
+      const deletedCount = await this.transactionRepository.delete(id);
       
-      if (deletedCount === 0) {
+      if (deletedCount) {
         throw new AppError('Failed to delete transaction');
       }
 

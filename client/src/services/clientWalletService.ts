@@ -6,7 +6,9 @@ import {
   ClientWalletCreationDto, 
   CreditDebitDto, 
   ClientWalletResponse,
-  CreditDebitResponse 
+  CreditDebitResponse, 
+  ClientWalletWithAssociationsResponse,
+  ClientWalletWithAssociations
 } from '../types/clientWallet';
 
 export class ClientWalletService {
@@ -18,8 +20,8 @@ export class ClientWalletService {
     return ApiService.get<ClientWallet[]>(API_ROUTES.CLIENT_WALLETS.GET_ALL);
   }
 
-  static async getClientWalletById(id: number): Promise<ClientWalletResponse> {
-    return ApiService.get<ClientWallet>(API_ROUTES.CLIENT_WALLETS.GET_BY_ID(id));
+  static async getClientWalletById(id: number): Promise<ClientWalletWithAssociationsResponse> {
+    return ApiService.get<ClientWalletWithAssociations>(API_ROUTES.CLIENT_WALLETS.GET_BY_ID(id));
   }
 
   static async getClientWalletsByClientId(clientId: string): Promise<ClientWalletResponse> {

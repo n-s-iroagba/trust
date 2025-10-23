@@ -1,10 +1,8 @@
 import { AdminWallet } from './adminWallet';
 import { Transaction } from './transaction';
 import { ApiResponse } from './api';
-interface User {
-    firstName:string
-    lastName:string
-}
+import { Client } from './client';
+
 export interface ClientWallet {
   id: number;
   adminWalletId: number;
@@ -13,8 +11,8 @@ export interface ClientWallet {
   amountInUSD: number;
   createdAt: string;
   updatedAt: string;
-  adminWallet?: AdminWallet;
-  user?:User
+  adminWallet: AdminWallet;
+  client?:Client
 }
 
 export interface ClientWalletCreationDto {
@@ -24,9 +22,14 @@ export interface ClientWalletCreationDto {
 
 export interface CreditDebitDto {
   amountInUSD: number;
-  adminWalletId: number;
+}
+export interface ClientWalletWithAssociations extends ClientWallet{
+  client:Client
+  transactions:Transaction[]
+  
 }
 
+export type ClientWalletWithAssociationsResponse = ApiResponse<ClientWalletWithAssociations>;
 export type ClientWalletResponse = ApiResponse<ClientWallet | ClientWallet[]>;
 
 export interface CreditDebitResponse {

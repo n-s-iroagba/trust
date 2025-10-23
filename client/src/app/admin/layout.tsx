@@ -16,7 +16,7 @@ export default function AdminLayout({
     { name: 'Dashboard', href: '/admin', icon: '📊' },
     { name: 'Admin Wallets', href: '/wallets', icon: '👛' },
     { name: 'Client Wallets', href: '/client-wallets', icon: '👥' },
-    { name: 'Transaction Requests', href: '/transaction-requests', icon: '📋' },
+    { name: 'Transaction', href: '/transactions', icon: '📋' },
 
   ];
 

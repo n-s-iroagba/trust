@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useClientWallets } from '../../../hooks/useClientWallets';
-import { useAdminWallets } from '../../../hooks/useAdminWallets';
-import { ClientWallet, ClientWalletCreationDto, CreditDebitDto } from '../../../types/clientWallet';
-import { AdminWallet } from '../../../types/adminWallet';
-import ClientWalletList from '../../../components/ClientWalletList';
-import CreditDebitForm from '../../../components/CreditDebitForm';
-import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
+import ClientWalletList from "@/components/ClientWalletList";
+import CreditDebitForm from "@/components/CreditDebitForm";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import { useAdminWallets } from "@/hooks/useAdminWallets";
+import { useClientWallets } from "@/hooks/useClientWallets";
+import { ClientWallet, AdminWallet, ClientWalletCreationDto, CreditDebitDto } from "@/types";
+import { useState, useEffect } from "react";
+
 
 export default function ClientWalletsPage() {
+ 
+  const clientId = 1
   const { 
-    getAllClientWallets, 
+    getClientWalletsByClientId, 
     createClientWallet, 
     creditWallet, 
     debitWallet, 
@@ -61,7 +63,7 @@ export default function ClientWalletsPage() {
   const loadWallets = async () => {
     try {
       setError(null);
-      const response = await getAllClientWallets();
+      const response = await getClientWalletsByClientId(String(clientId));
       if (response.success && response.data) {
         const walletsData = Array.isArray(response.data) ? response.data : [response.data];
         setWallets(walletsData);
@@ -256,23 +258,11 @@ export default function ClientWalletsPage() {
                   const formData = new FormData(e.currentTarget);
                   const data: ClientWalletCreationDto = {
                     adminWalletId: parseInt(formData.get('adminWalletId') as string),
-                    clientId: formData.get('clientId') as string,
+                    clientId: String(clientId),
                   };
                   handleCreateWallet(data);
                 }} className="space-y-4">
-                  <div>
-                    <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-1">
-                      Client ID *
-                    </label>
-                    <input
-                      type="text"
-                      id="clientId"
-                      name="clientId"
-                      required
-                      placeholder="Enter client identifier"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
+                  
 
                   <div>
                     <label htmlFor="adminWalletId" className="block text-sm font-medium text-gray-700 mb-1">

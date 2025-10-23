@@ -7,7 +7,13 @@ interface TransactionAttributes {
   id: number;
   amountInUSD: number;
   clientWalletId: number;
-  adminWalletId: number;
+  reciepientAddress:string
+  type:'debit'|'credit',
+  amount: string;
+  status: 'pending' | 'successful' | 'failed';
+  date: string;
+  fee: string;
+  isAdminCreated?:boolean
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,6 +25,14 @@ class Transaction extends Model<TransactionAttributes, TransactionCreationAttrib
   public amountInUSD!: number;
   public clientWalletId!: number;
   public adminWalletId!: number;
+
+ clientReceivingAddress: string;
+  amount: string;
+
+
+  status: 'pending' | 'successful' | 'failed';
+  date: string;
+  fee: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -60,6 +74,21 @@ Transaction.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+   clientReceivingAddress: {
+     type:DataTypes.STRING
+   },
+    amount:  {
+     type:DataTypes.STRING
+   },
+    status:  {
+     type:DataTypes.STRING
+   },
+    date: {
+     type:DataTypes.STRING
+   },
+    fee:  {
+     type:DataTypes.STRING
+   },
   },
   {
     sequelize,

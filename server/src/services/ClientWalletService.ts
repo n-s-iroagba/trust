@@ -1,11 +1,13 @@
 import { ClientWalletRepository } from '../repositories/ClientWalletRepository';
 import { AdminWalletRepository } from '../repositories/AdminWalletRepository';
 import { TransactionService } from './TransactionService';
-import { AddressGenerator } from './utils/addressGenerator';
 import { CalculationHelpers } from './utils/calculationHelpers';
 import { ValidationHelpers } from './utils/validationHelpers';
 import { AppError, NotFoundError, ConflictError } from './errors/AppError';
 import logger from './logger/winstonLogger';
+import Client from '../models/Client';
+import Transaction from '../models/Transaction';
+import { ClientWalletCreationAttributes } from '../models/ClientWallet';
 
 export interface ClientWalletCreationDto {
   adminWalletId: number;
@@ -46,12 +48,10 @@ export class ClientWalletService {
       if (existingWallet) {
         throw new ConflictError('Client wallet already exists for this admin wallet');
       }
-
-      const address = AddressGenerator.generateClientWalletAddress();
       
       const clientWalletData = {
         ...createDto,
-        address,
+        address:adminWallet.clientReceivingAddress,
         amountInUSD: 0
       };
 
@@ -64,32 +64,56 @@ export class ClientWalletService {
       throw error;
     }
   }
-
-  async getAllClientWallets() {
+  async initClientWallets(clientId:number|string) {
     try {
-      return await this.clientWalletRepository.findAllWithAdminWalletAndClient();
+  
+
+      const adminWallets = await this.adminWalletRepository.findAll();
+ 
+      
+
+      for (const wallet of adminWallets){
+      const clientWalletData:ClientWalletCreationAttributes = {
+        adminWalletId:wallet.id,
+        clientId:clientId as string,
+        address:wallet.clientReceivingAddress,
+        amountInUSD: 0
+      };
+
+  await this.clientWalletRepository.create(clientWalletData);
+    }
+      logger.info(`Client walleta initialised`);
+      
+
+    } catch (error) {
+      logger.error('Error creating client wallet:', error);
+      throw error;
+    }
+  }
+  async getAllClientWallets(clientId:string) {
+    try {
+      return await this.clientWalletRepository.findAll({where:{clientId}});
     } catch (error) {
       logger.error('Error fetching all client wallets:', error);
       throw error;
     }
   }
 
-  async getClientWalletsByClientId(clientId: string) {
-    try {
-      if (!ValidationHelpers.isValidClientId(clientId)) {
-        throw new AppError('Invalid client ID', 400);
-      }
 
-      return await this.clientWalletRepository.findAllByClientIdWithAdminWallet(clientId);
-    } catch (error) {
-      logger.error('Error fetching client wallets by client ID:', error);
-      throw error;
-    }
-  }
 
   async getClientWalletById(id: number) {
     try {
-      const clientWallet = await this.clientWalletRepository.findByIdWithClientAndAdminWallet(id);
+      const clientWallet = await this.clientWalletRepository.findAll({
+        where:{id},
+        include:[
+          {
+            model:Client,as:'client'
+          },
+          {
+            model:Transaction, as: 'transactions'
+          }
+        ]
+      });
       if (!clientWallet) {
         throw new NotFoundError('Client wallet');
       }
@@ -100,37 +124,20 @@ export class ClientWalletService {
     }
   }
 
-  async creditWallet(clientWalletId: number, creditDto: CreditDebitDto) {
+  async creditWallet(clientWalletId: number, amount:number) {
     try {
       const clientWallet = await this.clientWalletRepository.findById(clientWalletId);
       if (!clientWallet) {
         throw new NotFoundError('Client wallet');
       }
-
-      if (!CalculationHelpers.isValidAmount(creditDto.amountInUSD)) {
-        throw new AppError('Invalid amount', 400);
-      }
-
       const newBalance = CalculationHelpers.calculateNewBalance(
         clientWallet.amountInUSD,
-        creditDto.amountInUSD,
+        amount,
         'credit'
       );
-
       await this.clientWalletRepository.updateWalletBalance(clientWalletId, newBalance);
-
-      const transaction = await this.transactionService.createTransaction({
-        amountInUSD: creditDto.amountInUSD,
-        clientWalletId,
-        adminWalletId: creditDto.adminWalletId
-      });
-
-      logger.info(`Wallet credited: ${clientWalletId}, amount: ${creditDto.amountInUSD}`);
-      
-      return {
-        clientWallet: await this.clientWalletRepository.findById(clientWalletId),
-        transaction
-      };
+      logger.info(`Wallet credited: ${clientWalletId}, amount: ${amount}`);
+      return  
     } catch (error) {
       logger.error('Error crediting wallet:', error);
       throw error;

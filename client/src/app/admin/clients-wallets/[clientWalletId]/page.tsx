@@ -2,18 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTransactions } from '../../../../../hooks/useTransactions';
-import { Transaction } from '../../../../../types/transaction';
-import TransactionList from '../../../../../components/TransactionList';
-import DeleteConfirmationModal from '../../../../../components/DeleteConfirmationModal';
+import { useTransactions } from '@/hooks/useTransactions';
+import { ClientWalletWithAssociations, Transaction } from '@/types';
+import { useClientWallets } from '@/hooks/useClientWallets';
 
 export default function ClientWalletTransactionsPage() {
   const params = useParams();
   const router = useRouter();
   const clientWalletId = parseInt(params.clientWalletId as string);
-  
-  const { getTransactionsByClientWalletId, deleteTransaction, loading } = useTransactions();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const { deleteTransaction, loading } = useTransactions();
+  const {getClientWalletById}= useClientWallets()
+
+  const [wallet, setWallet] = useState<ClientWalletWithAssociations|null>(null);
+    const transactions = wallet?.transactions ||[]
+
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; transaction: Transaction | null }>({
     isOpen: false,
     transaction: null,
@@ -22,13 +25,13 @@ export default function ClientWalletTransactionsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadTransactions = async () => {
+    const  loadWallets= async () => {
       try {
         setError(null);
-        const response = await getTransactionsByClientWalletId(clientWalletId);
+        const response = await getClientWalletById(clientWalletId);
         if (response.success && response.data) {
-          const transactionsData = Array.isArray(response.data) ? response.data : [response.data];
-          setTransactions(transactionsData);
+      
+          setWallet(response.data);
         } else {
           setError(response.message || 'Failed to load transactions');
         }
@@ -39,31 +42,10 @@ export default function ClientWalletTransactionsPage() {
     };
 
     if (clientWalletId) {
-      loadTransactions();
+      (loadWallets);
     }
   }, [clientWalletId]);
 
-  const handleDeleteTransaction = async () => {
-    if (!deleteModal.transaction) return;
-
-    try {
-      setDeleteError(null);
-      await deleteTransaction(deleteModal.transaction.id);
-      setDeleteModal({ isOpen: false, transaction: null });
-      
-      // Reload transactions after successful deletion
-      const response = await getTransactionsByClientWalletId(clientWalletId);
-      if (response.success && response.data) {
-        const transactionsData = Array.isArray(response.data) ? response.data : [response.data];
-        setTransactions(transactionsData);
-      } else {
-        setError(response.message || 'Failed to reload transactions after deletion');
-      }
-    } catch (err) {
-      setDeleteError('Failed to delete transaction. Please try again.');
-      console.error('Failed to delete transaction:', err);
-    }
-  };
 
   const handleBack = () => {
     router.back();
@@ -97,7 +79,7 @@ export default function ClientWalletTransactionsPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Error Messages */}
-        {(error || deleteError) && (
+        {(error) && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center">
@@ -111,7 +93,7 @@ export default function ClientWalletTransactionsPage() {
                     {error ? 'Load Error' : 'Delete Error'}
                   </h3>
                   <p className="text-sm text-red-700 mt-1">
-                    {error || deleteError}
+                    {error}
                   </p>
                 </div>
               </div>
@@ -152,7 +134,10 @@ export default function ClientWalletTransactionsPage() {
               <div>
                 <h1 className="text-3xl font-bold text-primary">Transactions</h1>
                 <p className="text-gray-600 mt-2">
-                  Client Wallet ID: {clientWalletId}
+                 {wallet?.client.firstName}   {wallet?.client.lastName}
+                </p>
+                   <p className="text-gray-600 mt-2">
+                 {wallet?.adminWallet?.currencyAbbreviation}
                 </p>
               </div>
             </div>
@@ -162,14 +147,14 @@ export default function ClientWalletTransactionsPage() {
           </div>
         </div>
 
-        {/* Transaction List */}
-        <div className="bg-white rounded-lg shadow-lg">
-          <TransactionList
-            transactions={transactions}
-            onDelete={(transaction) => setDeleteModal({ isOpen: true, transaction })}
-            loading={loading}
-          />
-        </div>
+           <div className="mt-3">
+                <button
+                  onClick={() => router.push(`/transactions/${clientWalletId}`)}
+                  className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+                >
+                  View Transactions
+                </button>
+              </div>
 
         {/* Summary Card */}
         {transactions.length > 0 && (
@@ -239,16 +224,6 @@ export default function ClientWalletTransactionsPage() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
-        <DeleteConfirmationModal
-          isOpen={deleteModal.isOpen}
-          onClose={() => setDeleteModal({ isOpen: false, transaction: null })}
-          onConfirm={handleDeleteTransaction}
-          title="Delete Transaction"
-          message="Are you sure you want to delete this transaction? This will also adjust the client wallet balance and cannot be undone."
-          loading={loading}
-   
-        />
       </div>
     </div>
   );

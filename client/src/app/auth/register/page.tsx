@@ -1,9 +1,14 @@
 'use client'
 import { useState, useEffect } from 'react';
 import { ChevronLeft, Copy, Download, Eye, EyeOff, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ApiService } from '@/services/apiService';
+import { API_ROUTES } from '@/lib/api-routes';
 
 export default function WalletRegistration() {
   const [step, setStep] = useState(1);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,23 +20,22 @@ export default function WalletRegistration() {
   const [showPinConfirm, setShowPinConfirm] = useState(false);
   const [recoveryPhrase, setRecoveryPhrase] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [savedToGoogle, setSavedToGoogle] = useState(false);
-  const [verifyPhrase, setVerifyPhrase] = useState<Record<number, string>>({});
-  const [verifyOrder, setVerifyOrder] = useState<number[]>([]);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasCopiedOrDownloaded, setHasCopiedOrDownloaded] = useState(false);
+  const router = useRouter()
 
-  // Generate 12-word recovery phrase
+  // Generate 12-word recovery phrase using one word for each letter A-Z
   const generateRecoveryPhrase = (): string[] => {
     const wordList = [
-      'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
-      'academy', 'accept', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
-      'acknowledge', 'acquire', 'across', 'act', 'action', 'activate', 'active', 'actor',
-      'actual', 'acute', 'add', 'address', 'adjust', 'admin', 'admire', 'admit',
-      'adopt', 'adore', 'adorn', 'adult', 'advance', 'advise', 'advocate', 'affair',
-      'afford', 'afraid', 'after', 'again', 'against', 'age', 'agent', 'agree',
-      'ahead', 'aim', 'air', 'airport', 'aisle', 'alarm', 'album', 'alert'
+      'apple', 'banana', 'cherry', 'dolphin', 'elephant', 'flamingo', 
+      'giraffe', 'honey', 'igloo', 'jaguar', 'koala', 'lemon', 
+      'mango', 'night', 'orange', 'penguin', 'queen', 'rabbit', 
+      'sunset', 'tiger', 'umbrella', 'violin', 'whale', 'xray', 
+      'yacht', 'zebra'
     ];
-
+    
+    // Shuffle and take first 12 words
     const shuffled = [...wordList].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 12);
   };
@@ -47,16 +51,42 @@ export default function WalletRegistration() {
     return password.length >= 8;
   };
 
+  // Submit registration data to server
+  const submitRegistration = async () => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        firstName,
+        lastName,
+        email,
+        password,
+        pin,
+        recoveryPhrase: recoveryPhrase.join(' '), // Convert array to space-separated string
+        createdAt: new Date().toISOString()
+      };
+
+      console.log('Submitting registration payload:', payload);
+
+      ApiService.post(API_ROUTES.AUTH.SIGNUP,payload)
+
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Auto-progress when email and password are valid
   useEffect(() => {
-    if (step === 1 && isValidEmail(email) && isValidPassword(password) && password === confirmPassword) {
+    if (step === 1 && firstName && lastName && isValidEmail(email) && isValidPassword(password) && password === confirmPassword) {
       const timer = setTimeout(() => {
         setStep(2);
         setError('');
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [email, password, confirmPassword, step]);
+  }, [firstName, lastName, email, password, confirmPassword, step]);
 
   // Auto-progress when PIN is complete
   useEffect(() => {
@@ -82,71 +112,48 @@ export default function WalletRegistration() {
     }
   }, [pinConfirm, pin, step]);
 
-  // Auto-progress after showing recovery phrase
+  // Auto-progress after user has copied or downloaded recovery phrase
   useEffect(() => {
-    if (step === 4) {
+    if (step === 4 && hasCopiedOrDownloaded) {
       const timer = setTimeout(() => {
-        // Select 3 random words to verify
-        const randomIndices: number[] = [];
-        while (randomIndices.length < 3) {
-          const idx = Math.floor(Math.random() * 12);
-          if (!randomIndices.includes(idx)) randomIndices.push(idx);
-        }
-        setVerifyOrder(randomIndices);
-        setVerifyPhrase({});
         setStep(5);
-      }, 5000); // Show phrase for 5 seconds
+        // Submit registration data to server
+        submitRegistration();
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [step]);
-
-  // Auto-progress when verification is complete
-  useEffect(() => {
-    if (step === 5 && Object.keys(verifyPhrase).length === 3) {
-      let allCorrect = true;
-      for (let i = 0; i < verifyOrder.length; i++) {
-        const correctWord = recoveryPhrase[verifyOrder[i]];
-        const userWord = verifyPhrase[i];
-        if (userWord !== correctWord) {
-          allCorrect = false;
-          setError(`Word ${i + 1} is incorrect. Expected "${correctWord}"`);
-          break;
-        }
-      }
-      
-      if (allCorrect) {
-        const timer = setTimeout(() => {
-          setStep(6);
-          setError('');
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [verifyPhrase, step, recoveryPhrase, verifyOrder]);
+  }, [hasCopiedOrDownloaded, step]);
 
   const handleDownloadPhrase = () => {
-    const text = `Recovery Phrase\n\n${recoveryPhrase.join(' ')}\n\nKeep this phrase safe!`;
+    const text = `TrustX Wallet Recovery Phrase\n\nIMPORTANT: Keep this phrase safe and secure!\n\nRecovery Phrase: ${recoveryPhrase.join(' ')}\n\nDate Created: ${new Date().toLocaleDateString()}\nEmail: ${email}\n\nInstructions:\n- Never share this phrase with anyone\n- Store it in a secure location\n- This phrase can restore your wallet if you lose access`;
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', 'recovery_phrase.txt');
+    element.setAttribute('download', 'trustx_wallet_recovery_phrase.txt');
     element.style.display = 'none';
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-  };
-
-  const handleSaveToGoogle = async () => {
-    setSavedToGoogle(true);
+    
+    // Mark as downloaded
+    setHasCopiedOrDownloaded(true);
   };
 
   const copyToClipboard = (word: string, index: number) => {
     navigator.clipboard.writeText(word);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
+    
+    // Mark as copied (even partial copy counts)
+    setHasCopiedOrDownloaded(true);
   };
 
-  const handleVerifyInput = (position: number, value: string) => {
-    setVerifyPhrase({ ...verifyPhrase, [position]: value });
+  const copyFullPhrase = () => {
+    navigator.clipboard.writeText(recoveryPhrase.join(' '));
+    setCopiedIndex(-1); // Use -1 to indicate full phrase copied
+    setTimeout(() => setCopiedIndex(null), 2000);
+    
+    // Mark as copied
+    setHasCopiedOrDownloaded(true);
   };
 
   // Step indicators
@@ -155,8 +162,7 @@ export default function WalletRegistration() {
     { number: 2, title: 'Create PIN' },
     { number: 3, title: 'Confirm PIN' },
     { number: 4, title: 'Recovery Phrase' },
-    { number: 5, title: 'Verify Phrase' },
-    { number: 6, title: 'Complete' }
+    { number: 5, title: 'Complete' }
   ];
 
   return (
@@ -196,7 +202,7 @@ export default function WalletRegistration() {
       {/* Content */}
       <div className="flex-1 flex flex-col justify-center px-6 py-8">
         
-        {/* Step 1: Email and Password */}
+        {/* Step 1: Account Information */}
         {step === 1 && (
           <div className="text-center space-y-6 max-w-md mx-auto w-full">
             <div>
@@ -205,6 +211,35 @@ export default function WalletRegistration() {
             </div>
 
             <div className="space-y-4">
+              {/* First Name Input */}
+              <div className="text-left">
+                <label className="text-gray-700 text-sm font-semibold block mb-2">First Name</label>
+                <div className="border-2 border-gray-300 rounded-xl p-4 focus-within:border-blue-500 transition">
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter your first name"
+                    className="w-full bg-transparent text-gray-900 placeholder-gray-400 outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {/* Last Name Input */}
+              <div className="text-left">
+                <label className="text-gray-700 text-sm font-semibold block mb-2">Last Name</label>
+                <div className="border-2 border-gray-300 rounded-xl p-4 focus-within:border-blue-500 transition">
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter your last name"
+                    className="w-full bg-transparent text-gray-900 placeholder-gray-400 outline-none"
+                  />
+                </div>
+              </div>
+
               {/* Email Input */}
               <div className="text-left">
                 <label className="text-gray-700 text-sm font-semibold block mb-2">Email Address</label>
@@ -215,7 +250,6 @@ export default function WalletRegistration() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
                     className="w-full bg-transparent text-gray-900 placeholder-gray-400 outline-none"
-                    autoFocus
                   />
                 </div>
                 {email && !isValidEmail(email) && (
@@ -398,57 +432,24 @@ export default function WalletRegistration() {
                 Download
               </button>
               <button
-                onClick={handleSaveToGoogle}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition ${
-                  savedToGoogle
-                    ? 'bg-green-500 text-white'
-                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={copyFullPhrase}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
               >
-                {savedToGoogle ? <Check size={16} /> : null}
-                {savedToGoogle ? 'Saved' : 'Save to Drive'}
+                <Copy size={16} />
+                Copy All
               </button>
             </div>
-            
-            <p className="text-blue-600 text-sm">✓ Showing recovery phrase, proceeding to verification...</p>
-          </div>
-        )}
 
-        {/* Step 5: Verify Recovery Phrase */}
-        {step === 5 && (
-          <div className="text-center space-y-6 max-w-md mx-auto w-full">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Recovery Phrase</h2>
-              <p className="text-gray-600">Enter the words in the correct order</p>
-            </div>
-
-            <div className="space-y-4">
-              {verifyOrder.map((wordIndex, position) => (
-                <div key={position} className="text-left">
-                  <label className="text-gray-700 text-sm font-semibold block mb-2">
-                    Word #{wordIndex + 1}
-                  </label>
-                  <input
-                    type="text"
-                    value={verifyPhrase[position] || ''}
-                    onChange={(e) => handleVerifyInput(position, e.target.value.toLowerCase())}
-                    placeholder="Enter word"
-                    className="w-full border-2 border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition"
-                    autoFocus={position === 0}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            {Object.keys(verifyPhrase).length === 3 && !error && (
-              <p className="text-green-600 text-sm">✓ Verification complete, finalizing setup...</p>
+            {hasCopiedOrDownloaded ? (
+              <p className="text-green-600 text-sm">✓ Recovery phrase saved, completing setup...</p>
+            ) : (
+              <p className="text-yellow-600 text-sm">Please download or copy your recovery phrase to continue</p>
             )}
           </div>
         )}
 
-        {/* Step 6: Success */}
-        {step === 6 && (
+        {/* Step 5: Success */}
+        {step === 5 && (
           <div className="text-center space-y-6 max-w-md mx-auto w-full">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
               <Check size={32} className="text-white" />
@@ -459,16 +460,22 @@ export default function WalletRegistration() {
             </div>
             
             <div className="border-2 border-gray-300 rounded-xl p-4 text-left">
-              <p className="text-gray-700 text-sm">Email: {email}</p>
+              <p className="text-gray-700 text-sm">Name: {firstName} {lastName}</p>
+              <p className="text-gray-700 text-sm mt-2">Email: {email}</p>
               <p className="text-gray-700 text-sm mt-2">PIN: ••••••</p>
               <p className="text-gray-900 text-sm font-mono mt-2 opacity-50">
                 {recoveryPhrase.map((word, i) => (
                   <span key={i} className="mr-2">••••</span>
                 ))}
               </p>
+              <button onClick={()=>router.push('/client')}>Dashboard</button>
             </div>
 
-            <p className="text-green-600 text-sm">✓ Setup complete. Redirecting to dashboard...</p>
+            {isSubmitting ? (
+              <p className="text-blue-600 text-sm">Finalizing your wallet setup...</p>
+            ) : (
+              <p className="text-green-600 text-sm">✓ Setup complete. Redirecting to dashboard...</p>
+            )}
           </div>
         )}
       </div>

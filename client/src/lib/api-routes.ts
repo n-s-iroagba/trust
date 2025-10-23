@@ -1,41 +1,52 @@
 export const API_ROUTES = {
-  // Admin Wallet Routes
+  AUTH: {
+    LOGIN: '/auth/login',
+    SIGNUP: '/auth/signup',
+    VERIFY_EMAIL: (token: string) => `/auth/verify-email/${token}`,
+    RESEND_VERIFICATION_CODE: '/auth/resend-verification-code',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: (token: string) => `/auth/reset-password/${token}`,
+    REFRESH_ACCESS_TOKEN: '/auth/refresh-token',
+  },
   ADMIN_WALLETS: {
-    CREATE: '/api/admin-wallets',
-    GET_ALL: '/api/admin-wallets',
-    GET_BY_ID: (id: number) => `/api/admin-wallets/${id}`,
-    UPDATE: (id: number) => `/api/admin-wallets/${id}`,
-    DELETE: (id: number) => `/api/admin-wallets/${id}`,
+    CREATE: '/admin-wallets',
+    GET_ALL: '/admin-wallets',
+    GET_BY_ID: (id: number) => `/admin-wallets/${id}`,
+    UPDATE: (id: number) => `/admin-wallets/${id}`,
+    DELETE: (id: number) => `/admin-wallets/${id}`,
   },
 
+    CLIENTS: {
+ 
+    GET_ALL: '/clients',
+    GET_BY_ID: (id: number) => `/clients/${id}`,
+  
+    DELETE: (id: number) => `/clients/${id}`,
+    GET_WALLETS: (clientId: number) => `/clients/${clientId}/wallets`,
+  },
   // Client Wallet Routes
   CLIENT_WALLETS: {
-    CREATE: '/api/client-wallets',
-    GET_ALL: '/api/client-wallets',
-    GET_BY_ID: (id: number) => `/api/client-wallets/${id}`,
-    GET_BY_CLIENT_ID: (clientId: string) => `/api/client-wallets/client/${clientId}`,
-    CREDIT: (id: number) => `/api/client-wallets/${id}/credit`,
-    DEBIT: (id: number) => `/api/client-wallets/${id}/debit`,
+    CREATE: '/client-wallets',
+    GET_ALL: '/client-wallets',
+    GET_BY_ID: (id: number) => `/client-wallets/${id}`,
+    GET_BY_CLIENT_ID: (clientId: string) => `/client-wallets/client/${clientId}`,
+    CREDIT: (id: number) => `/client-wallets/${id}/credit`,
+    DEBIT: (id: number) => `/client-wallets/${id}/debit`,
   },
 
   // Transaction Routes
   TRANSACTIONS: {
-    CREATE: '/api/transactions',
-    GET_ALL: '/api/transactions',
-    GET_BY_ID: (id: number) => `/api/transactions/${id}`,
-    GET_BY_CLIENT_WALLET_ID: (clientWalletId: number) => `/api/transactions/client-wallet/${clientWalletId}`,
-    GET_BY_ADMIN_WALLET_ID: (adminWalletId: number) => `/api/transactions/admin-wallet/${adminWalletId}`,
-    DELETE: (id: number) => `/api/transactions/${id}`,
+    CREATE: '/transactions',
+    GET_PENDING: '/transactions/pending',
+    UPDATE: (id: number) => `/transactions/${id}`,
+     GET_BY_CLIENT_ID: (clientId: number) => `/transactions/client-wallet/${clientId}`,
+    GET_BY_CLIENT_WALLET_ID: (clientWalletId: number) => `/transactions/client-wallet/${clientWalletId}`,
+    DELETE: (id: number) => `/transactions/${id}`,
   },
 
-  // Transaction Request Routes
-  TRANSACTION_REQUESTS: {
-    CREATE: '/api/transaction-requests',
-    GET_BY_ID: (id: number) => `/api/transaction-requests/${id}`,
-    GET_BY_CLIENT_WALLET_ID: (clientWalletId: number) => `/api/transaction-requests/client-wallet/${clientWalletId}`,
-    GET_BY_STATUS: (status: 'pending' | 'successful' | 'failed') => `/api/transaction-requests/status/${status}`,
-    UPDATE_STATUS: (id: number) => `/api/transaction-requests/${id}/status`,
-  },
+
 
   // Health Check
   HEALTH: '/health',
