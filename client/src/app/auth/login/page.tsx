@@ -2,6 +2,11 @@
 import { useState} from 'react';
 import { ChevronLeft, Eye, EyeOff, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/hooks/useAuthContext';
+import { API_ROUTES } from '@/lib/api-routes';
+import { TokenService } from '@/lib/axios';
+import { ApiService } from '@/services/apiService';
+import { AuthUser } from '@/types';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +17,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const {setUser} = useAuthContext()
 
  
   const isValidEmail = (email: string): boolean => {
@@ -45,6 +51,20 @@ export default function LoginPage() {
 
     // Simulate API call
     try {
+
+      const response = await ApiService.post<{
+        user: AuthUser;
+        accessToken: string;
+      }>(API_ROUTES.AUTH.LOGIN, {
+        email,password
+      });
+      
+          if (!response?.data) {
+            throw new Error('Invalid server response: missing data');
+          }
+          setUser(response.data.user)
+          TokenService.setAccessToken(response.data.accessToken);
+          setSuccess(true);
       
     } catch (err) {
       console.error('login error occured', err)
@@ -214,6 +234,18 @@ export default function LoginPage() {
                 disabled={isLoading || success}
               >
                 Create account
+              </button>
+            </p>
+          </div>
+                  <div className="text-center">
+            <p className="text-gray-600">
+             Forgot Password?{' '}
+              <button
+                onClick={()=>router.push('/auth/forgot-password')}
+                className="text-blue-600 font-semibold hover:text-blue-700 transition"
+               
+              >
+                Forgot Password
               </button>
             </p>
           </div>

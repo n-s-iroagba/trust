@@ -34,7 +34,7 @@ export class AuthController {
     try {
       console.log(req.body)
       const response = await this.authservice.signUpAdmin(req.body)
-      res.status(201).json(response)
+      res.status(201).json({data:response})
     } catch (error) {
       next(error)
     }
@@ -83,7 +83,7 @@ export class AuthController {
         return
       }
 
-      const user = await this.authservice.getMe(userId)
+      const user = await this.authservice.getMe(Number(userId))
       res.status(200).json(user as AuthUser)
     } catch (error) {
       next(error)
@@ -134,11 +134,7 @@ export class AuthController {
       res.cookie('refreshToken', result.refreshToken, getCookieOptions())
 
       res.status(200).json({
-        user: {
-          id: result.user.id,
-          role: result.user.role,
-          username: result.user.username,
-        },
+        user:result.user,
         accessToken: result.accessToken,
       })
     } catch (error) {
@@ -146,30 +142,29 @@ export class AuthController {
     }
   }
 
-  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const cookieHeader = req.headers.cookie
-      if (!cookieHeader) {
-        res.status(401).json({ message: 'No cookies provided' })
-        return
-      }
+async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    console.log('🧩 req.cookies:', req.cookies);
+    console.log('🧩 req.headers.cookie:', req.headers.cookies);
+    console.log('🧩 Origin:', req.headers.origin);
+    console.log('🧩 Referer:', req.headers.referer);
 
-      const refreshToken = cookieHeader
-        .split(';')
-        .find(cookie => cookie.trim().startsWith('refreshToken='))
-        ?.split('=')[1]
+    const refreshToken = req.cookies?.refreshToken;
 
-      if (!refreshToken) {
-        res.status(401).json({ message: 'No refresh token found in cookies' })
-        return
-      }
-
-      const accessToken = await this.authservice.refreshToken(refreshToken)
-      res.status(200).json(accessToken)
-    } catch (error) {
-      next(error)
+    if (!refreshToken) {
+      console.warn('⚠️ No refresh token found in cookies');
+      res.status(401).json({ message: 'No refresh token found in cookies' });
+      return;
     }
+
+    const accessToken = await this.authservice.refreshToken(refreshToken);
+    res.status(200).json(accessToken);
+  } catch (error) {
+    next(error);
   }
+}
+
+
 
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

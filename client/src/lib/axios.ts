@@ -45,6 +45,7 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials:true
 });
 
 // Request interceptor to add auth token
@@ -97,15 +98,9 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = TokenService.getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
+    
         // Call refresh token endpoint
-        const response = await axios.post(`${BASE_URL}/api/auth/refresh`, {
-          refreshToken,
-        });
+        const response = await axios.get(`${BASE_URL}/auth/refresh`);
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 

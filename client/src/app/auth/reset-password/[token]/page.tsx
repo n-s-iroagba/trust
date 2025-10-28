@@ -7,8 +7,10 @@ import {
   LockClosedIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import { API_ROUTES } from '@/config/routes';
-import api, { setAccessToken } from '@/lib/apiUtils';
+import { ApiService } from '@/services/apiService';
+import { API_ROUTES } from '@/lib/api-routes';
+import { AuthUser } from '@/types';
+import { TokenService } from '@/lib/axios';
 
 interface FormState {
   password: string;
@@ -51,10 +53,10 @@ export default function ResetPasswordPage() {
     };
 
     try {
-      const response = await api.post(API_ROUTES.AUTH.RESET_PASSWORD, payload);
+      const response = await ApiService.post<{user:AuthUser,accessToken:string}>(API_ROUTES.AUTH.RESET_PASSWORD, payload);
 
-      const token = response.data.accessToken;
-      setAccessToken(token);
+      const token = response.data?.accessToken;
+      TokenService.setAccessToken(token as string);
       router.push(`/admin/dashboard`);
     } catch (err: unknown) {
       let msg = 'Unexpected error';

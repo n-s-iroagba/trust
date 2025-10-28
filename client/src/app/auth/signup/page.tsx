@@ -26,12 +26,7 @@ interface SignupFormData {
   confirmPassword: string;
 }
 
-interface AdvertiserFormData {
-  companyName: string;
-  contactName: string;
-  contact_email: string;
-  contact_phone: string;
-}
+
 
 interface PasswordValidation {
   minLength: boolean;
@@ -54,19 +49,12 @@ const SIGNUP_FORM_DEFAULT_DATA: SignupFormData = {
   confirmPassword: '',
 };
 
-const ADVERTISER_DEFAULT_DATA: AdvertiserFormData = {
-  companyName: '',
-  contactName: '',
-  contact_email: '',
-  contact_phone: '',
-};
 
 // ----------------------
 // Component
 // ----------------------
 export default function SignupForm() {
   const [userData, setUserData] = useState(SIGNUP_FORM_DEFAULT_DATA);
-  const [advertiserData, setAdvertiserData] = useState(ADVERTISER_DEFAULT_DATA);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -117,16 +105,7 @@ export default function SignupForm() {
       if (error) setError('');
     };
 
-  const handleAdvertiserChange =
-    (field: keyof AdvertiserFormData) => (e: ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setAdvertiserData((prev) => ({ ...prev, [field]: value }));
-      if (validationErrors[field]) {
-        setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-      }
-      if (error) setError('');
-    };
-
+ 
   const validateForm = (): boolean => {
     const errors: ValidationErrors = {};
 
@@ -145,17 +124,6 @@ export default function SignupForm() {
     else if (userData.password !== userData.confirmPassword)
       errors.confirmPassword = 'Passwords do not match';
 
-    // --- Advertiser ---
-    if (!advertiserData.companyName.trim())
-      errors.companyName = 'Company name is required';
-    if (!advertiserData.contactName.trim())
-      errors.contactName = 'Contact name is required';
-    if (!advertiserData.contact_email.trim())
-      errors.contact_email = 'Contact email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(advertiserData.contact_email))
-      errors.contact_email = 'Enter a valid contact email';
-    if (!advertiserData.contact_phone.trim())
-      errors.contact_phone = 'Contact phone is required';
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -163,19 +131,18 @@ export default function SignupForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setError('invalid fields')
+      return
+    };
 
     setLoading(true);
     setError('');
 
     try {
-      // Send both user and advertiser data together
-      const payload = {
-        user: userData,
-        advertiser: advertiserData,
-      };
-
-      const response = await ApiService.post<{verificationToken:string}>(API_ROUTES.AUTH.ADMIN_SIGNUP, payload);
+   
+      const response = await ApiService.post<{verificationToken:string}>(API_ROUTES.AUTH.ADMIN_SIGNUP, userData);
+      console.log(response)
 
       router.push(`/auth/verify-email/${response.data?.verificationToken}`);
     } catch (err) {
@@ -205,7 +172,7 @@ export default function SignupForm() {
     <div className="max-w-md mx-auto p-6 bg-gradient-to-br from-white/80 to-sky-50/80 rounded-2xl shadow-xl backdrop-blur-md">
       <form onSubmit={handleSubmit} className="space-y-6">
         <h2 className="text-xl font-semibold text-center text-sky-600">
-          Create User & Advertiser Account
+          Create Admin Account
         </h2>
 
         {/* Username */}
@@ -297,88 +264,6 @@ export default function SignupForm() {
           )}
         </div>
 
-        {/* --- Advertiser Info --- */}
-        <h3 className="text-lg font-medium text-sky-700 mt-8">
-          Advertiser Details
-        </h3>
-
-        {/* Company Name */}
-        <div className="relative">
-          <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Company Name"
-            value={advertiserData.companyName}
-            onChange={handleAdvertiserChange('companyName')}
-            className={inputClasses(validationErrors.companyName)}
-          />
-          {validationErrors.companyName && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-4 h-4" /> {validationErrors.companyName}
-            </p>
-          )}
-        </div>
-
-        {/* Contact Name */}
-        <div className="relative">
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Contact Name"
-            value={advertiserData.contactName}
-            onChange={handleAdvertiserChange('contactName')}
-            className={inputClasses(validationErrors.contactName)}
-          />
-          {validationErrors.contactName && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-4 h-4" /> {validationErrors.contactName}
-            </p>
-          )}
-        </div>
-
-        {/* Contact Email */}
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="email"
-            placeholder="Contact Email"
-            value={advertiserData.contact_email}
-            onChange={handleAdvertiserChange('contact_email')}
-            className={inputClasses(validationErrors.contact_email)}
-          />
-          {validationErrors.contact_email && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-4 h-4" />{' '}
-              {validationErrors.contact_email}
-            </p>
-          )}
-        </div>
-
-        {/* Contact Phone */}
-        <div className="relative">
-          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="tel"
-            placeholder="Contact Phone"
-            value={advertiserData.contact_phone}
-            onChange={handleAdvertiserChange('contact_phone')}
-            className={inputClasses(validationErrors.contact_phone)}
-          />
-          {validationErrors.contact_phone && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-4 h-4" />{' '}
-              {validationErrors.contact_phone}
-            </p>
-          )}
-        </div>
-
-        {/* Error message */}
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            {error}
-          </div>
-        )}
 
         {/* Submit */}
         <button

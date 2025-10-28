@@ -80,6 +80,42 @@ export default function TrustWalletHomepage() {
                   </div>
                 </div>
               </div>
+              <div className="relative z-10 flex items-center justify-center gap-4">
+                <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
+                  <div className="bg-gray-900 rounded-2xl p-6 w-64">
+                    <div className="text-white text-sm mb-2">My Wallet 2</div>
+                    <div className="text-white text-3xl font-bold mb-4">$11,220.20</div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white text-sm">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
+                        <span>Bitcoin</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white text-sm">
+                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+                        <span>Polygon</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative z-10 flex items-center justify-center gap-4">
+                <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
+                  <div className="bg-gray-900 rounded-2xl p-6 w-64">
+                    <div className="text-white text-sm mb-2">My Wallet 3</div>
+                    <div className="text-white text-3xl font-bold mb-4">$1,000.20</div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white text-sm">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
+                        <span>USDT</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white text-sm">
+                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+                        <span>Polygon</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

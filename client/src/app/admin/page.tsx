@@ -9,12 +9,14 @@ import { AdminWallet } from '../../types/adminWallet';
 import { ClientWallet } from '../../types/clientWallet';
 import { Transaction } from '@/types';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 
 export default function AdminDashboard() {
   const { getAllAdminWallets } = useAdminWallets();
   const { getAllClientWallets } = useClientWallets();
   const {getPendingTransactions} = useTransactions()
+  const {user} = useAuthContext()
 
   const [adminWallets, setAdminWallets] = useState<AdminWallet[]>([]);
   const [clientWallets, setClientWallets] = useState<ClientWallet[]>([]);
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
           {/* Fallback minimal dashboard */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-2">Welcome back, Admin! Some data may not be available.</p>
+            <p className="text-gray-600 mt-2">{`Welcome back, !${user?.username} Some data may not be available.`}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">

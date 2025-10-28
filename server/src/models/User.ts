@@ -5,6 +5,7 @@ import { Role } from '../types/auth.types';
 interface UserAttributes {
   id: number;
   email: string;
+  username?:string
   password: string;
   role: Role;
   isEmailVerified: boolean;
@@ -20,6 +21,7 @@ export interface UserCreationAttributes
   extends Optional<
     UserAttributes,
     | 'id'
+    | 'username'
     | 'isEmailVerified'
     | 'verificationCode'
     | 'verificationToken'
@@ -35,6 +37,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   declare email: string;
   declare password: string;
   declare role: Role;
+  declare username?:string
   declare isEmailVerified: boolean;
   declare verificationToken: string | null;
   declare verificationCode: string | null;
@@ -56,6 +59,12 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+    },
+        username: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue:'Admin'
+ 
     },
     password: {
       type: DataTypes.STRING,

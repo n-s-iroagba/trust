@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser'
 import { errorHandler } from './src/middlewares/errorHandler';
 import { requestLogger } from './src/middlewares/requestLogger';
 import adminWalletRoutes from './src/routers/adminWalletRoutes';
@@ -13,10 +14,36 @@ import clientRoutes from './src/routers/clientRoutes';
 
 const app = express();
 const PORT = process.env.NODE_ENV==='production'? 3000:5000;
+// ✅ Define allowed origins dynamically
+const allowedOrigins = [
+  'http://localhost:3000', // local dev frontend
+  'http://127.0.0.1:3000',
+  'https://trust.app',     // replace with your actual production domain
+  'https://www.trust.app',
+];
 
-// Security middleware
+// ✅ CORS configuration
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow non-browser clients like Postman
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // if using cookies or authentication headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true, // 🔥 required to allow cookies
+}));
+app.use(cookieParser()); 
 app.use(helmet());
-app.use(cors());
+
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

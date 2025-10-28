@@ -80,7 +80,7 @@ const minerPayload = {
       throw new Error('Missing email for verification');
     }
       const client = await this.clientService.createClient({userId:user.id, ...minerPayload})
-      console.log(client)
+
       const response = await this.verificationService.intiateEmailVerificationProcess(user)
 
       logger.info('Sign up completed successfully', { userId: user.id })
@@ -93,7 +93,7 @@ const minerPayload = {
   /**
    * Creates a sports admin.
    */
-  async signUpAdmin(data: SignUpRequestDto): Promise<User> {
+  async signUpAdmin(data: SignUpRequestDto): Promise<SignUpResponseDto> {
     try {
       logger.info('Admin sign up started', { email: data.email })
 
@@ -104,9 +104,10 @@ const minerPayload = {
         role: Role.ADMIN,
         isEmailVerified:true
       })
-
+      const response = await this.verificationService.intiateEmailVerificationProcess(user)
+   
       logger.info('Sign up completed successfully', { userId: user.id })
-      return user
+      return response
     } catch (error) {
       return this.handleAuthError('Admin sign up', { email: data.email }, error)
     }
@@ -315,8 +316,22 @@ const minerPayload = {
 
       const user = await this.userService.findUserById(userId)
       logger.info('Current user retrieved successfully', { userId })
-
-      return user as unknown as AuthUser
+           let returnUser:AuthUser ={
+      role:user.role,
+      userId:user.id,
+      username:user?.username||"Admin",
+      roleId:user.id
+      }
+      if(user.role === Role.CLIENT){
+        const client = await Client.findOne({where:{userId:user.id}})
+        if(!client){
+          throw new NotFoundError('Client not found')
+        }
+        returnUser.username=client?.firstName
+        returnUser.roleId
+      }
+  
+      return returnUser
     } catch (error) {
       return this.handleAuthError('Get current user', { userId }, error)
     }
