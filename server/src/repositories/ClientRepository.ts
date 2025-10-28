@@ -1,9 +1,14 @@
 // src/repositories/ClientRepository.ts
-
-
-
-
+import AdminWallet from '../models/AdminWallet'
 import Client, { ClientCreationAttributes } from '../models/Client'
+import ClientWallet from '../models/ClientWallet'
+export interface ClientWithWallets extends Client{
+  clientWallets:ClientWallet[]
+}
+
+
+
+
 
 import {BaseRepository} from './BaseRepository'
 
@@ -25,9 +30,20 @@ class ClientRepository extends BaseRepository<Client> {
 
 
 
-  async getAllClients(): Promise<Client[]> {
+  async getAllClients() {
 
-    const result = await this.findAll()
+    const result = await this.findAll({
+      include:[{
+        model:ClientWallet,
+        as:'clientWallets',
+        include:[
+          {
+            model:AdminWallet,
+            as:'adminWallet'
+          }
+        ]
+      }]
+    }) 
     return result
   }
 }

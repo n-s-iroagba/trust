@@ -7,8 +7,10 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { API_ROUTES } from '@/config/routes';
-import api from '@/lib/apiUtils';
+import { ApiService } from '@/services/apiService';
+import { API_ROUTES } from '@/lib/api-routes';
+
+
 
 interface FormState {
   email: string;
@@ -43,7 +45,7 @@ export default function LoginPage() {
         email: form.email,
       };
 
-      await api.post(API_ROUTES.AUTH.FORGOT_PASSWORD, payload);
+      await ApiService.post(API_ROUTES.AUTH.FORGOT_PASSWORD, payload);
 
       setMessage('A password reset email has been sent to your email address.');
     } catch (err: unknown) {
@@ -129,7 +131,7 @@ export default function LoginPage() {
           </form>
         ) : (
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push('/auth/login')}
             className="w-full py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             <ArrowPathIcon className="w-5 h-5 " />

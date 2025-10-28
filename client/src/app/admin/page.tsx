@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminWallets } from '../../hooks/useAdminWallets';
 import { useClientWallets } from '../../hooks/useClientWallets';
-import { useTransactionRequests } from '../../hooks/useTransactionRequests';
+
 import { AdminWallet } from '../../types/adminWallet';
 import { ClientWallet } from '../../types/clientWallet';
 import { Transaction } from '@/types';
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
           <StatCard
             title="Client Wallets"
             value={clientWallets.length}
-            change={`$${totalClientBalance.toFixed(2)} total`}
+            change={`$${totalClientBalance} total`}
             icon="👥"
             color="bg-green-100 text-green-600"
             href="/client-wallets"
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
           <StatCard
             title="Pending Requests"
             value={pendingRequests.length}
-            change={`$${totalPendingAmount.toFixed(2)} pending`}
+            change={`$${totalPendingAmount} pending`}
             icon="📋"
             color="bg-yellow-100 text-yellow-600"
             href="/transaction-requests"
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">
-                          ${request.amountInUSD.toFixed(2)} Request
+                          ${request.amountInUSD} Request
                         </p>
                         <p className="text-sm text-gray-500">
                           Client: {request.clientWallet?.clientId}

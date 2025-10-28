@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api` || 'http://localhost:3000/api';
+const BASE_URL = 'http://localhost:5000/api';
 
 // Token storage utilities
 const TokenService = {
@@ -115,7 +115,7 @@ api.interceptors.response.use(
         }
 
         // Retry original request
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`; 
         processQueue(null, accessToken);
 
         return api(originalRequest);
@@ -123,9 +123,9 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         TokenService.clearTokens();
         // Redirect to login page
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        // if (typeof window !== 'undefined') {ZZ
+        //   window.location.href = '/login';
+        // }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

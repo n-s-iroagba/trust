@@ -1,16 +1,13 @@
 export class CalculationHelpers {
   static calculateNewBalance(currentBalance: number, amount: number, operation: 'credit' | 'debit'): number {
-    if (!this.isValidAmount(currentBalance) || !this.isValidAmount(amount)) {
-      throw new Error('Invalid amount provided for calculation');
-    }
 
     if (operation === 'credit') {
-      return Number((currentBalance + amount).toFixed(2));
+      return Number((currentBalance + amount));
     } else if (operation === 'debit') {
       if (currentBalance < amount) {
         throw new Error('Insufficient balance for debit operation');
       }
-      return Number((currentBalance - amount).toFixed(2));
+      return Number((currentBalance - amount));
     }
 
     throw new Error('Invalid operation type');

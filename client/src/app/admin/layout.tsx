@@ -14,9 +14,9 @@ export default function AdminLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: '📊' },
-    { name: 'Admin Wallets', href: '/wallets', icon: '👛' },
-    { name: 'Client Wallets', href: '/client-wallets', icon: '👥' },
-    { name: 'Transaction', href: '/transactions', icon: '📋' },
+    { name: 'Admin Wallets', href: '/admin/wallets', icon: '👛' },
+    { name: 'Clients', href: '/admin/clients', icon: '👥' },
+    { name: 'Pending Transactions', href: '/admin/pending-transactions', icon: '📋' },
 
   ];
 
@@ -25,14 +25,14 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 flex z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         >
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true" />
+          <div className="fixed inset-0  bg-opacity-75" aria-hidden="true" />
         </div>
       )}
 
@@ -72,7 +72,7 @@ export default function AdminLayout({
                 href={item.href}
                 className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive(item.href)
-                    ? 'bg-primary text-white shadow-sm'
+                    ? 'bg-primary text-blue shadow-sm'
                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                 }`}
                 onClick={() => setSidebarOpen(false)}

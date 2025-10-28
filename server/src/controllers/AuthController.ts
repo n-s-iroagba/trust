@@ -43,17 +43,18 @@ export class AuthController {
   async createClient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await this.authservice.signupCient(req.body)
-      res.status(201).json(result)
+      res.status(201).json({data:result})
     } catch (error) {
       next(error)
-    }
+    } 
   }
 
   async resendCode(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { token, id } = req.body
-      const newToken = await this.authservice.generateNewCode(token, id)
-      res.json({ verificationToken: newToken, id } as ResendVerificationRespnseDto)
+      const { verificationToken, id } = req.body
+      console.log(req.body)
+      const newToken = await this.authservice.generateNewCode(id,verificationToken)
+      res.json({data:{ verificationToken: newToken, id } as ResendVerificationRespnseDto})
     } catch (error) {
       next(error)
     }
@@ -102,12 +103,12 @@ export class AuthController {
       if ('refreshToken' in result && 'accessToken' in result) {
         const verified = result as AuthServiceLoginResponse
         res.cookie('refreshToken', verified.refreshToken, getCookieOptions())
-        res.status(200).json({
+        res.status(200).json({data:{
           user: verified.user,
           accessToken: verified.accessToken,
-        })
+        }})
       } else {
-        res.status(200).json(result as SignUpResponseDto)
+        res.status(200).json({data:result as SignUpResponseDto})
       }
     } catch (error) {
       next(error)
@@ -118,10 +119,10 @@ export class AuthController {
     try {
       const result = await this.authservice.verifyEmail(req.body)
       res.cookie('refreshToken', result.refreshToken, getCookieOptions())
-      res.status(200).json({
+      res.status(200).json({data:{
         user: result.user,
         accessToken: result.accessToken,
-      })
+      }})
     } catch (error) {
       next(error)
     }

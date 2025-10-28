@@ -41,7 +41,7 @@ export class EmailService {
   }
 
   // Singleton pattern for EmailService
-  public static getInstance(clientUrl?: string): EmailService {
+   static getInstance(clientUrl?: string): EmailService {
     if (!EmailService.instance) {
       if (!clientUrl) {
         throw new Error('ClientUrl is required for first EmailService instantiation')
@@ -60,14 +60,14 @@ export class EmailService {
     // }
 
     return {
-      host: process.env.SMTP_HOST as string,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: 465,
-      
+      // parseInt(process.env.SMTP_PORT || '587'),
       secure: true,
-      
+      //  process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
       auth: {
-        user: process.env.SMTP_USER as string,
-        pass: process.env.SMTP_PASS as string,
+        user: process.env.SMTP_USER || 'wealthfundingtradestation@gmail.com',
+        pass: process.env.SMTP_PASS || 'anft vmyj ianz sftx', // App password for Gmail
       },
       from: process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@yourapp.com',
     }
@@ -265,7 +265,7 @@ export class EmailService {
       `
 
       await this.sendEmail({
-        to: user.email,
+        to:user.email,
         subject: 'Verify Your Email Address - Admissions Portal',
         html,
       })

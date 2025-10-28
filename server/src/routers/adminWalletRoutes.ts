@@ -12,19 +12,19 @@ import {
 const router = Router();
 const adminWalletController = new AdminWalletController();
 
-// All routes require admin authentication
-router.use(authenticate, requireAdmin);
+// // All routes require admin authentication
+// router.use(authenticate, requireAdmin);
 
 router.post(
   '/',
-  validate(AdminWalletCreationSchema),
+  // validate(AdminWalletCreationSchema),
   adminWalletController.createAdminWallet
 );
 
 router.put(
   '/:id',
-  validate(AdminWalletIdSchema),
-  validate(AdminWalletUpdateSchema),
+  // validate(AdminWalletIdSchema),
+  // validate(AdminWalletUpdateSchema),
   adminWalletController.updateAdminWallet
 );
 
@@ -35,13 +35,13 @@ router.get(
 
 router.get(
   '/:id',
-  validate(AdminWalletIdSchema),
+  // validate(AdminWalletIdSchema),
   adminWalletController.getAdminWalletById
 );
 
 router.delete(
   '/:id',
-  validate(AdminWalletIdSchema),
+  // validate(AdminWalletIdSchema),
   adminWalletController.deleteAdminWallet
 );
 

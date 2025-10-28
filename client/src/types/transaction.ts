@@ -18,12 +18,12 @@ export interface Transaction {
   id: number;
   amountInUSD: number;
   clientWalletId: number;
-  reciepientAddress: string;
+  recipientAddress : string;
   type: TransactionType;
   amount: string;
   status: TransactionStatus;
   date: string;
-  fee: string;
+  fee: number;
   isAdminCreated?:boolean
   createdAt?: Date;
   updatedAt?: Date;
@@ -35,8 +35,11 @@ export interface Transaction {
 export interface TransactionCreationDto {
   amountInUSD: number;
   clientWalletId: number;
-  reciepientAddress:string
+  recipientAddress :string
   type:'debit'|'credit',
+  status?:TransactionStatus
+  fee?:number
+  isAdminCreated:boolean
 }
 
 export type TransactionResponse = ApiResponse<Transaction | Transaction[]>;

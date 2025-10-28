@@ -1,12 +1,12 @@
 export interface AuthUser {
-  id: number
+  userId: number
   username: string
   role: Role
+  roleId:number
 }
 export enum Role {
-  ADVERTISER = 'advertiser',
+  CLIENT = 'client',
   ADMIN = 'admin',
-  GENERAL_ADMIN = 'general_admin',
 }
 
 

@@ -10,7 +10,7 @@ import { Transaction, TransactionStatus } from '@/types/transaction';
 import { useExchangeRates } from '@/hooks/useCoins';
 
 export default function TrustWalletDashboard() {
-  const clientId = "1";
+  const clientId = "7";
   const [selectedTab, setSelectedTab] = useState<'crypto' | 'watchlist' | 'nft'>('crypto');
   const router = useRouter();
   const [topMoversTab, setTopMoversTab] = useState('rwa');
@@ -30,29 +30,35 @@ export default function TrustWalletDashboard() {
   const { convertFromUSD} = useExchangeRates();
   
   // Fetch transactions when selected wallet changes
-  useEffect(() => {
-    if (selectedWalletId) {
-      fetchTransactions(selectedWalletId);
-    }
-  }, [selectedWalletId]);
+useEffect(() => {
+  if (selectedWalletId) {
+    fetchTransactions(selectedWalletId);
+  }
+}, [selectedWalletId]);
 
-  const fetchTransactions = async (walletId: number) => {
-    try {
-      const response = await getTransactionsByClientWalletId(walletId);
-      if (response.success && response.data) {
-        setTransactions(response.data.transactions);
-        // For demo purposes, let's create some mock pending transactions
-        // In real app, you would fetch these separately
-        setPendingTransactions(response.data.transactions.slice(0, 3).map(tx => ({
-          ...tx,
-      
-          status: TransactionStatus.PENDING
-        })));
-      }
-    } catch (err) {
-      console.error('Failed to fetch transactions:', err);
+const fetchTransactions = async (walletId: number) => {
+  try {
+    const response = await getTransactionsByClientWalletId(walletId);
+
+    if (response.success && response.data) {
+      const transactions = response.data as Transaction[] || [];
+
+      // ✅ Filter confirmed / completed transactions
+      setTransactions(
+        transactions.filter(tx => tx.status !== TransactionStatus.PENDING)
+      );
+
+      // ✅ Filter pending transactions
+      setPendingTransactions(
+        transactions.filter(tx => tx.status === TransactionStatus.PENDING)
+      );
     }
-  };
+  } catch (err) {
+    console.error('Failed to fetch transactions:', err);
+    setTransactions([]); // Fallback to empty arrays to prevent stale data
+    setPendingTransactions([]);
+  }
+};
 
   const { getClientWalletsByClientId, loading } = useClientWallets();
   const [wallets, setWallets] = useState<ClientWallet[]>([]);
@@ -312,7 +318,7 @@ export default function TrustWalletDashboard() {
                 </div>
                 <div className="flex flex-col items-center">
                   <button 
-                    onClick={() => router.push('/client/transactions')}
+                    onClick={() => router.push(`/client/transactions/${selectedWalletId}`)}
                     className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center hover:bg-gray-200 mb-2"
                   >
                     <ArrowDownUp className="w-6 h-6 text-gray-700" />
@@ -321,7 +327,7 @@ export default function TrustWalletDashboard() {
                 </div>
                 <div className="flex flex-col items-center">
                   <button 
-                    onClick={() => router.push('/recieve')}
+                    onClick={() => router.push('/client/receive')}
                     className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center hover:bg-gray-200 mb-2"
                   >
                     <ArrowDown className="w-6 h-6 text-gray-700" />
@@ -795,11 +801,13 @@ export default function TrustWalletDashboard() {
             <div className="w-6 h-6 bg-blue-600 rounded-lg"></div>
             <span className="text-xs font-semibold text-blue-600">Home</span>
           </button>
-          <button className="flex flex-col items-center gap-1 py-2">
+          <button onClick={()=>router.push('/client/send')} className="flex flex-col items-center gap-1 py-2">
             <TrendingUp className="w-6 h-6 text-gray-400" />
             <span className="text-xs text-gray-500">Send</span>
           </button>
-          <button className="flex flex-col items-center gap-1 py-2">
+          <button
+          onClick={()=>router.push('/client/receive')}
+          className="flex flex-col items-center gap-1 py-2">
             <ArrowDownUp className="w-6 h-6 text-gray-400" />
             <span className="text-xs text-gray-500">Receive</span>
           </button>

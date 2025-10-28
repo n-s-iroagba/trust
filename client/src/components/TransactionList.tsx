@@ -68,7 +68,7 @@ export default function TransactionList({ transactions, onDelete, onReject, onAp
                       transaction.type === TransactionType.CREDIT ? 'text-green-600' : 'text-red-500'
                     }`}
                   >
-                    {transaction.type === TransactionType.CREDIT ? '+' : '-'}${transaction.amountInUSD.toFixed(2)}
+                    {transaction.type === TransactionType.CREDIT ? '+' : '-'}${transaction.amountInUSD}
                   </div>
                   <div className="text-sm text-gray-500">
                     {new Date(transaction.createdAt ?? transaction.date).toLocaleDateString()}
@@ -79,7 +79,7 @@ export default function TransactionList({ transactions, onDelete, onReject, onAp
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
                   <div>
                     <span className="font-medium">Recipient Address:</span>
-                    <p className="font-mono text-xs truncate">{transaction.reciepientAddress}</p>
+                    <p className="font-mono text-xs truncate">{transaction.recipientAddress }</p>
                   </div>
 
                   <div>

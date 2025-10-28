@@ -37,7 +37,6 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
           </svg>
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No Client Wallets</h3>
-        <p className="text-gray-500">No client wallets found. Create your first client wallet to get started.</p>
       </div>
     );
   }
@@ -68,7 +67,7 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-primary">
-                    ${wallet.amountInUSD.toFixed(2)}
+                    ${wallet.amountInUSD}
                   </span>
                 </div>
                 
@@ -85,7 +84,7 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
                       <span className="font-medium">Admin Wallet:</span>
                       <div className="flex items-center space-x-2 mt-1">
                         {wallet.adminWallet.logo && (
-                          <Image fill
+                          <Image 
                             src={wallet.adminWallet.logo}
                             alt={wallet.adminWallet.currency}
                             width={16}
@@ -98,7 +97,7 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 font-mono truncate mt-1">
-                        {wallet.adminWallet.address}
+                        {wallet.adminWallet.clientReceivingAddress}
                       </p>
                     </div>
                   )}
@@ -125,7 +124,7 @@ export default function ClientWalletList({ wallets, onCreditDebit, loading }: Cl
                   <span>Manage</span>
                 </button>
                 <Link
-                  href={`/transactions/client-wallet/${wallet.id}`}
+                  href={`/admin/transactions/${wallet.id}`}
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors flex items-center space-x-2 text-center justify-center"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

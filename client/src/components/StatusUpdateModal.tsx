@@ -65,7 +65,7 @@ export default function StatusUpdateModal({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium text-gray-700">Amount:</span>
-                <p className="text-lg font-bold text-primary">${request.amountInUSD.toFixed(2)}</p>
+                <p className="text-lg font-bold text-primary">${request.amountInUSD}</p>
               </div>
               <div>
                 <span className="font-medium text-gray-700">Client:</span>

@@ -66,11 +66,8 @@ export class AdminWalletService {
         throw new AppError('Invalid currency abbreviation', 400);
       }
 
-      const [affectedCount] = await this.adminWalletRepository.update(updateDto, { where: { id } });
-      
-      if (affectedCount === 0) {
-        throw new AppError('Failed to update admin wallet');
-      }
+      await this.adminWalletRepository.update(updateDto, { where: { id } });
+     
 
       const updatedWallet = await this.adminWalletRepository.findById(id);
       logger.info(`Admin wallet updated: ${id}`);

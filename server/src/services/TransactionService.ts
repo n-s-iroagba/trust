@@ -7,7 +7,8 @@ import logger from './logger/winstonLogger';
 interface UpdateStatusDto{
   status: 'successful' | 'failed'
 }
-import { ClientWalletService } from './ClientWalletService';
+
+import Transaction, { TransactionCreationAttributes, TransactionStatus } from '../models/Transaction';
 
 export interface TransactionCreationDto {
   amountInUSD: number;
@@ -18,14 +19,15 @@ export interface TransactionCreationDto {
 export class TransactionService {
   private transactionRepository: TransactionRepository;
   private clientWalletRepository: ClientWalletRepository;
-  private clientWalletService: ClientWalletService;
+
 
   constructor() {
     this.transactionRepository = new TransactionRepository();
     this.clientWalletRepository = new ClientWalletRepository();
+  
   }
 
-  async createTransaction(createDto: TransactionCreationDto) {
+  async createTransaction(createDto: TransactionCreationAttributes) {
     try {
       if (!CalculationHelpers.isValidAmount(Math.abs(createDto.amountInUSD))) {
         throw new AppError('Invalid amount', 400);
@@ -46,6 +48,18 @@ export class TransactionService {
     }
   }
 
+  async getTransactionsByClientWalletId(clientWalletId:number) {
+    try {
+      const transactions = await this.transactionRepository.findAll({where:{clientWalletId}})
+      console.log(await this.transactionRepository.findAll())
+      logger.info(`Transaction retrieved with client Id ${clientWalletId}`);
+      
+      return transactions;
+    } catch (error) {
+      logger.error('Error creating transaction:', error);
+      throw error;
+    }
+  }
 
 
   async updateTransactionStatus(id: number, updateDto: UpdateStatusDto) {
@@ -64,16 +78,59 @@ export class TransactionService {
       }
 
       if (updateDto.status === 'successful') {
-        await this.clientWalletService.creditWallet(transaction.clientWalletId,transaction.amountInUSD);
+          
+  const newBalance = CalculationHelpers.calculateNewBalance(transaction.amountInUSD,
+          Number( transaction.amountInUSD),
+        transaction.type
+  )
+         await this.clientWalletRepository.updateWalletBalance(transaction.clientWalletId, newBalance);
       }
+      
 
-     await transaction.update({status:updateDto.status})
+   transaction.status = updateDto.status as TransactionStatus
+     await transaction.save()
     
     } catch (error) {
       logger.error('Error updating transaction request status:', error);
       throw error;
     }
   }
+
+    async updateTransaction(id: number, updateDto:Partial<Transaction>) {
+    try {
+
+      const transaction = await this.transactionRepository.findById(id);
+      if (!transaction) {
+        throw new NotFoundError('Transaction request');
+      }
+
+      if (transaction.amountInUSD !== updateDto.amountInUSD) {
+          const newBalance = CalculationHelpers.calculateNewBalance(transaction.amountInUSD,
+          Number( transaction.amountInUSD),
+        transaction.type
+          )
+
+          transaction.update(updateDto)
+
+      if (updateDto.status === 'successful') {
+          
+
+  
+         await this.clientWalletRepository.updateWalletBalance(transaction.clientWalletId, newBalance);
+      }
+      }
+
+      
+
+   transaction.status = updateDto.status as TransactionStatus
+     await transaction.save()
+    
+    } catch (error) {
+      logger.error('Error updating transaction request status:', error);
+      throw error;
+    }
+  }
+
 
   async deleteTransaction(id: number) {
     try {

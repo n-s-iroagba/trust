@@ -20,12 +20,11 @@ export default function TransactionForm({
     id:initialData?.id,
     amountInUSD: initialData?.amountInUSD ?? 0,
     clientWalletId,
-    reciepientAddress: initialData?.reciepientAddress ?? '',
+    recipientAddress : initialData?.recipientAddress  ?? '',
     type: initialData?.type ?? TransactionType.DEBIT,
-    amount: initialData?.amount ?? '',
     status: initialData?.status ?? TransactionStatus.PENDING,
     date: initialData?.date ?? new Date().toISOString().split('T')[0],
-    fee: initialData?.fee ?? '',
+    fee: initialData?.fee ?? undefined,
   });
 
   const handleChange = (
@@ -74,8 +73,8 @@ export default function TransactionForm({
         </label>
         <input
           type="text"
-          name="reciepientAddress"
-          value={formData.reciepientAddress}
+          name="recipientAddress"
+          value={formData.recipientAddress}
           onChange={handleChange}
           className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
@@ -120,20 +119,6 @@ export default function TransactionForm({
         </select>
       </div>
 
-      {/* Amount */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Amount
-        </label>
-        <input
-          type="text"
-          name="amount"
-          value={formData.amount}
-          onChange={handleChange}
-          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
 
       {/* Date */}
       <div>
@@ -149,19 +134,6 @@ export default function TransactionForm({
         />
       </div>
 
-      {/* Fee */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Fee
-        </label>
-        <input
-          type="text"
-          name="fee"
-          value={formData.fee}
-          onChange={handleChange}
-          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
 
       {/* Submit */}
       <button

@@ -1,6 +1,9 @@
+import Client from "../models/Client"
 import User from "../models/User"
+
 import UserRepository from "../repositories/UserRepository"
 import { SignUpRequestDto, SignUpResponseDto, Role, LoginRequestDto, AuthServiceLoginResponse, VerifyEmailRequestDto, ResetPasswordRequestDto, AuthUser } from "../types/auth.types"
+import { ClientService } from "./ClientService"
 import { EmailService } from "./EmailService"
 import { BadRequestError, ConflictError, NotFoundError } from "./errors/AppError"
 import logger from "./logger/winstonLogger"
@@ -17,34 +20,67 @@ export class AuthService {
   private readonly tokenService: TokenService
   private readonly verificationService: VerificationService
   private readonly userRepository: UserRepository
+  private readonly clientService: ClientService
 
   constructor() {
     this.passwordService = new PasswordService()
     this.verificationService = new VerificationService()
-    this.tokenService = new TokenService('SDD')
+    this.tokenService = new TokenService('aba','')
     this.userService = new UserService()
     this.emailService = new EmailService('')
     this.userRepository = new UserRepository()
+    this.clientService = new ClientService()
   }
 
   /**
    * Registers a new user and initiates email verification.
    */
-  async signupCient(data: SignUpRequestDto): Promise<SignUpResponseDto> {
+  async signupCient(data: any): Promise<SignUpResponseDto> {
+    const {
+  firstName,
+  lastName,
+  email,
+  password,
+  pin,
+  recoveryPhrase
+} = data
+
+// Separate payloads
+const userPayload = {
+  email,
+  password,
+  createdAt: new Date().toISOString(),
+};
+
+const minerPayload = {
+  firstName,
+  lastName,
+  pin,
+  recoveryPhrase: Array.isArray(recoveryPhrase)
+    ? recoveryPhrase.join(' ')
+    : recoveryPhrase,
+};
+
     try {
       logger.info('Sign up process started', { email: data.email })
 
       const hashedPassword = await this.passwordService.hashPassword(data.password)
       const existingUser = await this.userRepository.findUserByEmail(data.email)
       if(existingUser){
+        console.log(existingUser)
         throw new ConflictError('User with this email already exists .')
       }
       const user = await this.userRepository.createUser({
-        ...data,
+        email,
         password: hashedPassword,
-        role: Role.ADVERTISER,
+        role: Role.CLIENT,
       })
-
+    if (!user.email) {
+      logger.error('Missing user email when initiating verification', { userId: user.id });
+      throw new Error('Missing email for verification');
+    }
+      const client = await this.clientService.createClient({userId:user.id, ...minerPayload})
+      console.log(client)
       const response = await this.verificationService.intiateEmailVerificationProcess(user)
 
       logger.info('Sign up completed successfully', { userId: user.id })
@@ -99,11 +135,27 @@ export class AuthService {
       logger.info('Login successful', { userId: user.id })
 
       await this.userService.updateUser(user.id,{refreshToken})
+  let returnUser:AuthUser ={
+      role:user.role,
+      userId:user.id,
+      username:'admin',
+      roleId:user.id
+      }
+      if(user.role === Role.CLIENT){
+        const client = await Client.findOne({where:{userId:user.id}})
+        if(!client){
+          throw new NotFoundError('Client not found')
+        }
+        returnUser.username=client?.firstName
+        returnUser.roleId
+      }
+  
 
-      return { user, accessToken, refreshToken }
+      return { user:returnUser, accessToken, refreshToken }
     } catch (error) {
       return this.handleAuthError('Login', { email: data.email }, error)
     }
+
   }
 
   /**
@@ -137,27 +189,47 @@ export class AuthService {
   async verifyEmail(data: VerifyEmailRequestDto): Promise<AuthServiceLoginResponse> {
     try {
       logger.info('Email verification started')
- const user = await this.userRepository.findUserByVerificationToken(data.verificationCode)
-      const { decoded } = this.tokenService.verifyToken(data.verificationToken, 'email_verification')
-    
+
+ const user = await this.userRepository.findUserByVerificationToken(data.verificationToken)
+  console.log(user)
       if (!user) {
         logger.warn('Invalid verification token provided')
         throw new NotFoundError('User with Token not found.')
       }
 
-      
-     
-      this.verificationService.validateVerificationCode(user, data.verificationCode)
-      await this.userService.markUserAsVerified(user)
+    const { decoded } = this.tokenService.verifyToken(data.verificationToken, 'email_verification')
+    console.log(decoded)
+
+    //  if(decoded.id !== user.getDataValue('id')){
+    //     throw new BadRequestError('Wrong credentials')
+    //  }
+      // this.verificationService.validateVerificationCode(user, data.verificationCode)
+      user.verificationCode = null
+      user.verificationToken = null
+      await user.save()
+
 
       const { accessToken, refreshToken } = this.generateTokenPair(user)
       logger.info('Email verification successful', { userId: user.id })
-      await this.userService.updateUser(user.id,{refreshToken})
-
- 
+      user.refreshToken = refreshToken
+      await user.save()
+      let returnUser:AuthUser ={
+      role:user.role,
+      userId:user.id,
+      username:'admin',
+      roleId:user.id
+      }
+      if(user.role === Role.CLIENT){
+        const client = await Client.findOne({where:{userId:user.id}})
+        if(!client){
+          throw new NotFoundError('Client not found')
+        }
+        returnUser.username=client?.firstName
+        returnUser.roleId
+      }
   
 
-      return { user, accessToken, refreshToken }
+      return { user:returnUser, accessToken, refreshToken }
     } catch (error) {
       return this.handleAuthError('Email verification', {}, error)
     }

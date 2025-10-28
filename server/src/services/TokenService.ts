@@ -31,7 +31,7 @@ export class TokenService {
     private readonly resetPasswordSecret?: string,
     private readonly emailVerificationSecret?: string
   ) {
-    if (!secret) {
+    if  (!secret) {
       logger.error('JWT secret is required for TokenService initialization')
       throw new Error('JWT secret is required')
     }
@@ -87,8 +87,10 @@ export class TokenService {
         tokenLength: token.length,
       })
 
-      return token
+       return token
     } catch (error) {
+      console.error(error)
+
       logger.error('Access token generation failed', {
         error,
         email: payload.email,
@@ -136,7 +138,7 @@ export class TokenService {
 
       logger.info('Reset password token generated successfully', {
         userId: payload.id || payload.id,
-        email: payload.email,
+         email: payload.email,
         expiresIn: options.expiresIn,
         requestId: payload.requestId,
         tokenLength: token.length,
@@ -144,6 +146,8 @@ export class TokenService {
 
       return token
     } catch (error) {
+      console.error(error)
+
       logger.error('Reset password token generation failed', {
         error,
         email: payload.email,
@@ -155,22 +159,22 @@ export class TokenService {
   /**
    * Generate an email verification token
    */
-  generateEmailVerificationToken(User: User, customExpiresIn?: StringValue | number): string {
+  generateEmailVerificationToken(user: User, customExpiresIn?: StringValue | number): string {
     try {
       // Extract only essential fields from the User model
       const verificationTokenPayload: JwtPayload = {
-        id: User.id,
-        email: User.email,
+        id: user.id,
+        email: user.email,
 
         tokenType: 'email_verification',
       }
 
-      const secret = this.emailVerificationSecret || this.secret
+      const secret = this.secret
       const options: TokenGenerationOptions = {
         expiresIn: customExpiresIn || this.tokenExpirations.emailVerification,
         issuer: this.defaultOptions.issuer,
         audience: this.defaultOptions.audience,
-        subject: User.id?.toString(),
+        subject: user.id?.toString(),
       }
 
       const signOptions: SignOptions = {
@@ -184,18 +188,20 @@ export class TokenService {
       const token = jwt.sign(verificationTokenPayload, secret, signOptions)
 
       logger.info('Email verification token generated successfully', {
-        userId: User.id,
-        email: User.email,
+         userId: user.id,
+        email: user.email,
         expiresIn: options.expiresIn,
-        verificationCode: User.verificationCode,
+        verificationCode: user.verificationCode,
         tokenLength: token.length,
       })
 
       return token
     } catch (error) {
+      console.error(error)
+
       logger.error('Email verification token generation failed', {
         error,
-        email: User.email,
+        email: user.email,
       })
       throw new Error('Email verification token generation failed')
     }
@@ -236,11 +242,13 @@ export class TokenService {
 
       logger.info('Refresh token generated successfully', {
         userId: payload.id || payload.id,
-        tokenLength: token.length,
+         tokenLength: token.length,
       })
 
       return token
     } catch (error) {
+      console.error(error)
+
       logger.error('Refresh token generation failed', { error })
       throw new Error('Refresh token generation failed')
     }
@@ -293,6 +301,8 @@ export class TokenService {
     }
       return { decoded }
     } catch (error) {
+      console.error(error)
+
       // Handle JWT library errors
       if (error instanceof jwt.JsonWebTokenError) {
         logger.warn('JWT verification failed', {

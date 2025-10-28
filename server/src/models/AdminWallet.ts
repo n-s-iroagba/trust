@@ -1,12 +1,12 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from './index';
+import  sequelize  from '../config/database';
 
 interface AdminWalletAttributes {
   id: number;
   currencyAbbreviation: string;
   logo: string;
   clientReceivingAddress:string
- 
+  address:string;
   currency: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -14,15 +14,15 @@ interface AdminWalletAttributes {
 
 interface AdminWalletCreationAttributes extends Optional<AdminWalletAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
-class AdminWallet extends Model<AdminWalletAttributes, AdminWalletCreationAttributes> implements AdminWalletAttributes {
-  public id!: number;
-  public currencyAbbreviation!: string;
-  public clientReceivingAddress!:string;
-  public address!:string;
-  public logo!: string;
-  public currency!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+class AdminWallet extends Model<AdminWalletAttributes, AdminWalletCreationAttributes> {
+  declare id: number;
+  declare currencyAbbreviation: string;
+  declare clientReceivingAddress:string;
+  declare address:string;
+  declare logo: string;
+  declare currency: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 AdminWallet.init(

@@ -26,3 +26,13 @@ export interface ErrorResponse {
     message: string;
   }>;
 }
+export enum Role {
+  CLIENT = 'client',
+  ADMIN = 'admin',
+}
+export interface AuthUser {
+  userId: number
+  username: string
+  role: Role
+  roleId:number
+}

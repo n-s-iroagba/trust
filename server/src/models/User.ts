@@ -1,22 +1,19 @@
-import { DataTypes, Model, type Optional } from 'sequelize'
-import sequelize from '../config/database'
-import {Role} from '../types/auth.types'
-
-
-
+import { DataTypes, Model, Optional } from 'sequelize';
+import sequelize from '../config/database';
+import { Role } from '../types/auth.types';
 
 interface UserAttributes {
-  id: number
-  email: string
-  password: string
-  role: Role
-  isEmailVerified: boolean
-  verificationCode?: string | null
-  verificationToken?: string | null
-  passwordResetToken?: string | null
-  refreshToken?: string | null
-  createdAt?: Date
-  updatedAt?: Date
+  id: number;
+  email: string;
+  password: string;
+  role: Role;
+  isEmailVerified: boolean;
+  verificationCode?: string | null;
+  verificationToken?: string | null;
+  passwordResetToken?: string | null;
+  refreshToken?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface UserCreationAttributes
@@ -31,82 +28,70 @@ export interface UserCreationAttributes
     | 'createdAt'
     | 'refreshToken'
     | 'updatedAt'
-    | 'password'
-  > { }
+  > {}
 
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: number
-  public username!: string
-  public email!: string
-  public password!: string
-  public role!: Role
-  public signInCode:string
-  public phrase12Word:string[]
-  public isEmailVerified!: boolean
-  public verificationToken!: string | null
-  public refreshToken?: string | null
-  public verificationCode!: string | null
-  public passwordResetToken!: string | null
-
-  // timestamps
-  public readonly createdAt!: Date
-  public readonly updatedAt!: Date
-
-
+class User extends Model<UserAttributes, UserCreationAttributes> {
+  declare id: number;
+  declare email: string;
+  declare password: string;
+  declare role: Role;
+  declare isEmailVerified: boolean;
+  declare verificationToken: string | null;
+  declare verificationCode: string | null;
+  declare passwordResetToken: string | null;
+  declare refreshToken: string | null;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
+
 User.init(
   {
     id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       autoIncrement: true,
       allowNull: false,
+      primaryKey: true,
     },
     email: {
       type: DataTypes.STRING,
-      unique: true,
       allowNull: false,
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-   
     isEmailVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
     verificationToken: {
-      type: DataTypes.STRING(400),
+      type: DataTypes.STRING(1000),
       allowNull: true,
     },
     verificationCode: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-  
     passwordResetToken: {
-      type: DataTypes.STRING(400),
+      type: DataTypes.STRING(1000),
       allowNull: true,
     },
     refreshToken: {
-      type: DataTypes.STRING(400),
+      type: DataTypes.STRING(1000),
       allowNull: true,
     },
-
     role: {
       type: DataTypes.ENUM(...Object.values(Role)),
       allowNull: false,
-    }
-      },
-
-  
+    },
+  },
   {
     sequelize,
     tableName: 'users',
-    paranoid: true, // Enable soft deletes
+    paranoid: true,
+    modelName: 'User',
   }
-)
+);
 
-export default User
+export default User;

@@ -1,5 +1,7 @@
 import Client, { ClientCreationAttributes } from '../models/Client'
+import { AdminWalletRepository } from '../repositories/AdminWalletRepository'
 import ClientRepository from '../repositories/ClientRepository'
+import { ClientWalletService } from '../services/ClientWalletService'
 import {BadRequestError, NotFoundError} from './errors/AppError'
 import logger from './logger/winstonLogger'
 import jwt from 'jsonwebtoken'
@@ -7,26 +9,35 @@ import jwt from 'jsonwebtoken'
 
 export class ClientService {
   private clientRepository: ClientRepository
+  private adminWalletRepository:AdminWalletRepository
+  private clientWalletService:ClientWalletService
+  
 
   constructor() {
     this.clientRepository = new ClientRepository()
+    this. adminWalletRepository = new AdminWalletRepository()
+    this.clientWalletService = new ClientWalletService()
+
   }
 
   // -------------------------------
   // 🟢 CREATE
   // -------------------------------
-  async createClient(ClientData:ClientCreationAttributes): Promise<Client> {
-    try {
+async createClient(ClientData: ClientCreationAttributes): Promise<Client> {
+  try {
+    // Step 1: Create the client
+    const client = await this.clientRepository.createClient(ClientData);
+    await this.clientWalletService.initClientWallets(client.id)
 
-      const Client = await this.clientRepository.createClient(ClientData)
-      logger.info('Client created successfully')
 
-      return Client
-    } catch (error) {
-      logger.error('Error creating Client'
-      )
-      throw error
-    }
+    logger.info('Client created successfully with associated wallets');
+
+    return client;
+  } catch (error) {
+    logger.error('Error creating client:', error);
+    throw error;
+  }
+
   }
 
   // -------------------------------
@@ -34,9 +45,9 @@ export class ClientService {
   // -------------------------------
   async getAllClients(): Promise<Client[]> {
     try {
-      const Clients = await this.clientRepository.getAllClients()
-      logger.info('Fetched all Clients', { count: Clients.length })
-      return Clients
+      const clients = await this.clientRepository.getAllClients()
+      logger.info('Fetched all Clients', { count: clients.length })
+      return clients
     } catch (error) {
       logger.error('Error fetching Clients', { error })
       throw error
@@ -58,11 +69,11 @@ export class ClientService {
     }
   }
 
-  async generateSessionToken(clientId:string|number,passCode:string){
+  async generateSessionToken(clientId:string|number,pin:string){
 
     try{
        const client = await this.clientRepository.findClientById(clientId as number)
-       if(client?.signInCode === passCode){
+       if(client?.pin === pin){
 
        const token = jwt.sign('sessionToken',null)
        return {token}

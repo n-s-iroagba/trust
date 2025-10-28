@@ -94,7 +94,7 @@ export default function AdminWalletList({
                     {wallet.currency}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {wallet.currencyAbbreviation} • {wallet.address}
+                    {wallet.currencyAbbreviation} 
                   </p>
                   <p className="text-xs text-gray-400 break-all">
                     Client Receiving Address: {wallet.clientReceivingAddress}

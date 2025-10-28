@@ -51,6 +51,20 @@ export const useTransactions = () => {
     }
   }, []);
 
+  const updateTransactionStatus = useCallback(async (id: number,data:Partial<Transaction>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await TransactionService.updateTransactionStatus(id,data);
+      return response;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const getTransactionsByClientId = useCallback(async (clientWalletId: number) => {
     setLoading(true);
     setError(null);
@@ -103,5 +117,6 @@ export const useTransactions = () => {
     getPendingTransactions,
     getTransactionsByClientWalletId,
     deleteTransaction,
+    updateTransactionStatus
   };
 };

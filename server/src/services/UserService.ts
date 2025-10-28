@@ -147,7 +147,7 @@ export class UserService {
 
   async updateUserVerification(user: User, verificationCode: string, verificationToken: string): Promise<User> {
     try {
-      const updatedUser = await this.userRepository.updateUserById(user.id, { verificationCode, verificationToken })
+      const updatedUser = await user.update({verificationCode,verificationToken})
       if (!updatedUser) throw new NotFoundError('USER_NOT_FOUND')
       return updatedUser
     } catch (error) {

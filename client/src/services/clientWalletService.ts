@@ -28,17 +28,12 @@ export class ClientWalletService {
     return ApiService.get<ClientWallet[]>(API_ROUTES.CLIENT_WALLETS.GET_BY_CLIENT_ID(clientId));
   }
 
-  static async creditWallet(id: number, data: CreditDebitDto): Promise<CreditDebitResponse> {
+  static async creditWallet(id: string|number, data: CreditDebitDto): Promise<CreditDebitResponse> {
     return ApiService.post<{ clientWallet: ClientWallet; transaction: any }>(
-      API_ROUTES.CLIENT_WALLETS.CREDIT(id), 
+      API_ROUTES.CLIENT_WALLETS.CREDIT(id as string), 
       data
     ) as Promise<CreditDebitResponse>;
   }
 
-  static async debitWallet(id: number, data: CreditDebitDto): Promise<CreditDebitResponse> {
-    return ApiService.post<{ clientWallet: ClientWallet; transaction: any }>(
-      API_ROUTES.CLIENT_WALLETS.DEBIT(id), 
-      data
-    ) as Promise<CreditDebitResponse>;
-  }
+
 }

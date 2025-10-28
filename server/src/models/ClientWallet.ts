@@ -1,28 +1,32 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from './index';
 import AdminWallet from './AdminWallet';
 import Client from './Client';
+import sequelize from '../config/database';
 
 interface ClientWalletAttributes {
   id: number;
   adminWalletId: number;
-  clientId: string;
+  clientId: number;
   address: string;
   amountInUSD: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface ClientWalletCreationAttributes extends Optional<ClientWalletAttributes, 'id' | 'amountInUSD' | 'createdAt' | 'updatedAt'> {}
+export interface ClientWalletCreationAttributes
+  extends Optional<ClientWalletAttributes, 'id' | 'amountInUSD' | 'createdAt' | 'updatedAt'> {}
 
-class ClientWallet extends Model<ClientWalletAttributes, ClientWalletCreationAttributes> implements ClientWalletAttributes {
-  public id!: number;
-  public adminWalletId!: number;
-  public clientId!: string;
-  public address!: string;
-  public amountInUSD!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+class ClientWallet
+  extends Model<ClientWalletAttributes, ClientWalletCreationAttributes>
+  
+{
+  declare id: number;
+  declare adminWalletId: number;
+  declare clientId: string;
+  declare address: string;
+  declare amountInUSD: number;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ClientWallet.init(
@@ -41,7 +45,7 @@ ClientWallet.init(
       },
     },
     clientId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     address: {
@@ -52,7 +56,7 @@ ClientWallet.init(
     amountInUSD: {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
-      defaultValue: 0.00,
+      defaultValue: 0.0,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -72,8 +76,9 @@ ClientWallet.init(
   }
 );
 
-// Define associations
+// ✅ Associations
 ClientWallet.belongsTo(AdminWallet, { foreignKey: 'adminWalletId', as: 'adminWallet' });
-Client.hasMany(ClientWallet, { foreignKey: 'client', as: 'clientWallets' });
+Client.hasMany(ClientWallet, { foreignKey: 'clientId', as: 'clientWallets' });
+ClientWallet.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
 
 export default ClientWallet;

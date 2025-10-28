@@ -7,7 +7,7 @@ import { Transaction, TransactionStatus, TransactionType } from '@/types';
 import TransactionList from '@/components/TransactionList';
 
 export default function TransactionsPage() {
-  const { clientWalletId } = useParams<{ clientWalletId: string }>();
+
   const {
     getPendingTransactions,
     updateTransaction,
@@ -44,8 +44,8 @@ export default function TransactionsPage() {
   };
 
   useEffect(() => {
-    if (clientWalletId) loadTransactions();
-  }, [clientWalletId]);
+    loadTransactions();
+  }, []);
 
   // ✅ Apply filters
   const filteredTransactions = useMemo(() => {

@@ -2,12 +2,13 @@ export const API_ROUTES = {
   AUTH: {
     LOGIN: '/auth/login',
     SIGNUP: '/auth/signup',
-    VERIFY_EMAIL: (token: string) => `/auth/verify-email/${token}`,
+    ADMIN_SIGNUP: '/auth/admin/signup',
+    VERIFY_EMAIL: `/auth/verify-email/`,
     RESEND_VERIFICATION_CODE: '/auth/resend-verification-code',
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
     FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: (token: string) => `/auth/reset-password/${token}`,
+    RESET_PASSWORD: `/auth/reset-password`,
     REFRESH_ACCESS_TOKEN: '/auth/refresh-token',
   },
   ADMIN_WALLETS: {
@@ -32,8 +33,8 @@ export const API_ROUTES = {
     GET_ALL: '/client-wallets',
     GET_BY_ID: (id: number) => `/client-wallets/${id}`,
     GET_BY_CLIENT_ID: (clientId: string) => `/client-wallets/client/${clientId}`,
-    CREDIT: (id: number) => `/client-wallets/${id}/credit`,
-    DEBIT: (id: number) => `/client-wallets/${id}/debit`,
+    CREDIT: (id: string) => `/client-wallets/${id}/credit`,
+  
   },
 
   // Transaction Routes
@@ -41,6 +42,7 @@ export const API_ROUTES = {
     CREATE: '/transactions',
     GET_PENDING: '/transactions/pending',
     UPDATE: (id: number) => `/transactions/${id}`,
+        UPDATE_STATUS: (id: number) => `/transactions/status/${id}`,
      GET_BY_CLIENT_ID: (clientId: number) => `/transactions/client-wallet/${clientId}`,
     GET_BY_CLIENT_WALLET_ID: (clientWalletId: number) => `/transactions/client-wallet/${clientWalletId}`,
     DELETE: (id: number) => `/transactions/${id}`,

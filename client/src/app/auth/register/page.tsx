@@ -21,7 +21,7 @@ export default function WalletRegistration() {
   const [recoveryPhrase, setRecoveryPhrase] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [hasCopiedOrDownloaded, setHasCopiedOrDownloaded] = useState(false);
   const router = useRouter()
 
@@ -53,7 +53,7 @@ export default function WalletRegistration() {
 
   // Submit registration data to server
   const submitRegistration = async () => {
-    setIsSubmitting(true);
+
     try {
       const payload = {
         firstName,
@@ -67,13 +67,13 @@ export default function WalletRegistration() {
 
       console.log('Submitting registration payload:', payload);
 
-      ApiService.post(API_ROUTES.AUTH.SIGNUP,payload)
+      const response = await ApiService.post<{verificationToken:string}>(API_ROUTES.AUTH.SIGNUP,payload)
+      console.log(response)
+      router.push(`/auth/verify-email/${response?.data?.verificationToken}`)
 
     } catch (err) {
       console.error('Registration error:', err);
       setError('Registration failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -112,15 +112,13 @@ export default function WalletRegistration() {
     }
   }, [pinConfirm, pin, step]);
 
-  // Auto-progress after user has copied or downloaded recovery phrase
+
   useEffect(() => {
     if (step === 4 && hasCopiedOrDownloaded) {
-      const timer = setTimeout(() => {
-        setStep(5);
-        // Submit registration data to server
+   
         submitRegistration();
-      }, 1000);
-      return () => clearTimeout(timer);
+  
+ 
     }
   }, [hasCopiedOrDownloaded, step]);
 
@@ -162,7 +160,7 @@ export default function WalletRegistration() {
     { number: 2, title: 'Create PIN' },
     { number: 3, title: 'Confirm PIN' },
     { number: 4, title: 'Recovery Phrase' },
-    { number: 5, title: 'Complete' }
+
   ];
 
   return (
@@ -448,36 +446,6 @@ export default function WalletRegistration() {
           </div>
         )}
 
-        {/* Step 5: Success */}
-        {step === 5 && (
-          <div className="text-center space-y-6 max-w-md mx-auto w-full">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
-              <Check size={32} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Wallet Created!</h2>
-              <p className="text-gray-600">Your wallet is secure and ready to use</p>
-            </div>
-            
-            <div className="border-2 border-gray-300 rounded-xl p-4 text-left">
-              <p className="text-gray-700 text-sm">Name: {firstName} {lastName}</p>
-              <p className="text-gray-700 text-sm mt-2">Email: {email}</p>
-              <p className="text-gray-700 text-sm mt-2">PIN: ••••••</p>
-              <p className="text-gray-900 text-sm font-mono mt-2 opacity-50">
-                {recoveryPhrase.map((word, i) => (
-                  <span key={i} className="mr-2">••••</span>
-                ))}
-              </p>
-              <button onClick={()=>router.push('/client')}>Dashboard</button>
-            </div>
-
-            {isSubmitting ? (
-              <p className="text-blue-600 text-sm">Finalizing your wallet setup...</p>
-            ) : (
-              <p className="text-green-600 text-sm">✓ Setup complete. Redirecting to dashboard...</p>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ export class VerificationService {
   ) {
 
     this.emailService = new EmailService('');
-    this.tokenService = new TokenService('aba','',)
+    this.tokenService = new TokenService('aba','')
     this.userService = new UserService()
     this.config = {jwtSecret:'a',clientUrl:'',tokenExpiration:{
       verification: 0,
@@ -37,14 +37,17 @@ export class VerificationService {
     try {
       const verificationToken = this.tokenService.generateEmailVerificationToken(user)
 
-      const verificationCode = proccess.env.NODE_ENV === 'production' ? CodeHelper.generateVerificationCode() : '123456'
+      const verificationCode = process.env.NODE_ENV === 'production' ? CodeHelper.generateVerificationCode() : '123456'
 
-      await this.userService.updateUserVerification(user, verificationCode, verificationToken)
+       await User.update({verificationCode,verificationToken},{where:{id:user.id}})
+      console.log(verificationToken)
+      console.log(user)
       await this.emailService.sendVerificationEmail(user)
 
       logger.info('Verification details generated successfully', { userId: user.id })
       return { verificationToken, id: user.id }
     } catch (error) {
+      console.error(error)
       logger.error('Error generating verification details', { userId: user.id, error })
       throw error
     }
@@ -52,22 +55,24 @@ export class VerificationService {
 
   async regenerateVerificationCode(id: string, token: string): Promise<string> {
     try {
-      const user = await this.userService.findUserById(id)
-      const verificationToken = this.tokenService.generateEmailVerificationToken(user)
-      if (user.verificationToken !== token) throw new BadRequestError('Token does not match')
+      const u = await User.findByPk(1)
+      console.log(u)
+      const user = await this.userService.findUserByVerificationToken(token)
+      
   
-      const verificationCode = proccess.env.NODE_ENV === 'production' ? CodeHelper.generateVerificationCode() : '123456'
-      console.log('VVVV', verificationCode)
+      if (user.verificationToken !== token) throw new BadRequestError('Token does not match')
+      const verificationToken = this.tokenService.generateEmailVerificationToken(user)
+      const verificationCode = process.env.NODE_ENV === 'production' ? CodeHelper.generateVerificationCode() : '123456'
+      console.log('VVVV', verificationToken)
 
-      await this.userService.updateUserVerification(user, verificationCode, verificationToken)
- 
+       await User.update({verificationCode,verificationToken},{where:{id:user.id}})
       await this.emailService.sendVerificationEmail(user)
 
       logger.info('Verification code regenerated', { userId: user.id })
       return verificationToken
     } catch (error) {
       logger.error('Error regenerating verification code', { error })
-      throw error
+      throw error 
     }
   }
 

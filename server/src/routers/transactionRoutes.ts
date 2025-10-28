@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { TransactionRequestController } from '../controllers/TransactionRequestController';
+import { TransactionController } from '../controllers/TransactionController';
 import { authenticate, requireAdmin, requireClient } from '../middlewares/auth';
 import { validate } from '../middlewares/validation/validationMiddleware';
 import { 
@@ -11,47 +11,11 @@ import {
 } from '../middlewares/validation/schemas';
 
 const router = Router();
-const transactionRequestController = new TransactionRequestController();
+const transactionController = new TransactionController();
 
-// Client routes
-router.post(
-  '/',
-  authenticate,
-  requireClient,
-  validate(TransactionRequestCreationSchema),
-  transactionRequestController.createTransactionRequest
-);
-
-router.get(
-  '/client-wallet/:clientWalletId',
-  authenticate,
-  validate(ClientWalletIdParamSchema),
-  transactionRequestController.getTransactionRequestsByClientWalletId
-);
-
-// Admin routes
-router.patch(
-  '/:id/status',
-  authenticate,
-  requireAdmin,
-  validate(TransactionRequestIdSchema),
-  validate(UpdateStatusSchema),
-  transactionRequestController.updateTransactionRequestStatus
-);
-
-router.get(
-  '/status/:status',
-  authenticate,
-  requireAdmin,
-  validate(StatusParamSchema),
-  transactionRequestController.getTransactionRequestsByStatus
-);
-
-router.get(
-  '/:id',
-  authenticate,
-  validate(TransactionRequestIdSchema),
-  transactionRequestController.getTransactionRequestById
-);
+router.get('/client-wallet/:clientWalletId',transactionController.getTransactionsByClientWalletId)
+router.put('/:id',transactionController.updateTransaction)
+router.put('/status/:id',transactionController.updateTransactionStatus)
+router.get('/pending',transactionController.getPending)
 
 export default router;

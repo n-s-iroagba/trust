@@ -1,40 +1,45 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from './index';
+import sequelize from '../config/database';
 import AdminWallet from './AdminWallet';
 import ClientWallet from './ClientWallet';
+
+// Define enums for type and status
+export enum TransactionType {
+  DEBIT = 'debit',
+  CREDIT = 'credit'
+}
+
+export enum TransactionStatus {
+  PENDING = 'pending',
+  SUCCESSFUL = 'successful',
+  FAILED = 'failed'
+}
 
 interface TransactionAttributes {
   id: number;
   amountInUSD: number;
   clientWalletId: number;
-  reciepientAddress:string
-  type:'debit'|'credit',
-  amount: string;
-  status: 'pending' | 'successful' | 'failed';
-  date: string;
-  fee: string;
-  isAdminCreated?:boolean
+  recipientAddress: string;
+  type: TransactionType;
+  status: TransactionStatus;
+  isAdminCreated: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface TransactionCreationAttributes extends Optional<TransactionAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface TransactionCreationAttributes extends Optional<TransactionAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 class Transaction extends Model<TransactionAttributes, TransactionCreationAttributes> implements TransactionAttributes {
-  public id!: number;
-  public amountInUSD!: number;
-  public clientWalletId!: number;
-  public adminWalletId!: number;
+  declare id: number;
+  declare amountInUSD: number;
+  declare clientWalletId: number;
 
- clientReceivingAddress: string;
-  amount: string;
-
-
-  status: 'pending' | 'successful' | 'failed';
-  date: string;
-  fee: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare recipientAddress: string;
+  declare type: TransactionType;
+  declare status: TransactionStatus;
+  declare isAdminCreated: boolean;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Transaction.init(
@@ -47,6 +52,9 @@ Transaction.init(
     amountInUSD: {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
+      validate: {
+        min: 0.01
+      }
     },
     clientWalletId: {
       type: DataTypes.INTEGER,
@@ -56,13 +64,34 @@ Transaction.init(
         key: 'id',
       },
     },
-    adminWalletId: {
-      type: DataTypes.INTEGER,
+
+    recipientAddress: {
+      type: DataTypes.STRING(255),
       allowNull: false,
-      references: {
-        model: 'admin_wallets',
-        key: 'id',
-      },
+      validate: {
+        notEmpty: true
+      }
+    },
+    type: {
+      type: DataTypes.ENUM(TransactionType.DEBIT, TransactionType.CREDIT),
+      allowNull: false,
+      validate: {
+        isIn: [[TransactionType.DEBIT, TransactionType.CREDIT]]
+      }
+    },
+    status: {
+      type: DataTypes.ENUM(TransactionStatus.PENDING, TransactionStatus.SUCCESSFUL, TransactionStatus.FAILED),
+      allowNull: false,
+      defaultValue: TransactionStatus.PENDING,
+      validate: {
+        isIn: [[TransactionStatus.PENDING, TransactionStatus.SUCCESSFUL, TransactionStatus.FAILED]]
+      }
+    },
+
+    isAdminCreated: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -74,33 +103,40 @@ Transaction.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-   clientReceivingAddress: {
-     type:DataTypes.STRING
-   },
-    amount:  {
-     type:DataTypes.STRING
-   },
-    status:  {
-     type:DataTypes.STRING
-   },
-    date: {
-     type:DataTypes.STRING
-   },
-    fee:  {
-     type:DataTypes.STRING
-   },
   },
   {
     sequelize,
     modelName: 'Transaction',
     tableName: 'transactions',
+    indexes: [
+      {
+        fields: ['clientWalletId']
+      },
+   
+      {
+        fields: ['status']
+      },
+      {
+        fields: ['type']
+      },
+   
+    ]
   }
 );
 
-// Define associations
-Transaction.belongsTo(AdminWallet, { foreignKey: 'adminWalletId', as: 'adminWallet' });
-Transaction.belongsTo(ClientWallet, { foreignKey: 'clientWalletId', as: 'clientWallet' });
-AdminWallet.hasMany(Transaction, { foreignKey: 'adminWalletId', as: 'transactions' });
-ClientWallet.hasMany(Transaction, { foreignKey: 'clientWalletId', as: 'transactions' });
+
+Transaction.belongsTo(ClientWallet, { 
+  foreignKey: 'clientWalletId', 
+  as: 'clientWallet' 
+});
+
+
+ClientWallet.hasMany(Transaction, { 
+  foreignKey: 'clientWalletId', 
+  as: 'transactions' 
+});
+
+// ✅ Enums for type and status
+
 
 export default Transaction;

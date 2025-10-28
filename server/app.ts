@@ -3,15 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './src/middlewares/errorHandler';
 import { requestLogger } from './src/middlewares/requestLogger';
-import sequelize from './src/models';
 import adminWalletRoutes from './src/routers/adminWalletRoutes';
 import clientWalletRoutes from './src/routers/clientWalletRoutes';
-import transactionRequestRoutes from './src/routers/transactionRequestRoutes';
 import transactionRoutes from './src/routers/transactionRoutes';
 import logger from './src/services/logger/winstonLogger';
+import sequelize from './src/config/database';
+import authRoutes from './src/routers/authRoutes';
+import clientRoutes from './src/routers/clientRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_ENV==='production'? 3000:5000;
 
 // Security middleware
 app.use(helmet());
@@ -34,13 +35,15 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes)
+app.use('/api/clients',clientRoutes)
 app.use('/api/admin-wallets', adminWalletRoutes);
 app.use('/api/client-wallets', clientWalletRoutes);
 app.use('/api/transactions', transactionRoutes);
-app.use('/api/transaction-requests', transactionRequestRoutes);
+
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use( (req, res) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`

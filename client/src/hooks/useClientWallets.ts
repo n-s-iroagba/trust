@@ -79,19 +79,7 @@ export const useClientWallets = () => {
     }
   }, []);
 
-  const debitWallet = useCallback(async (id: number, data: CreditDebitDto): Promise<ApiResponse<any>> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await ClientWalletService.debitWallet(id, data);
-      return response;
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
 
   return {
     loading,
@@ -101,6 +89,6 @@ export const useClientWallets = () => {
     getClientWalletById,
     getClientWalletsByClientId,
     creditWallet,
-    debitWallet,
+
   };
 };

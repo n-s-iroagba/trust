@@ -3,17 +3,19 @@
 import type React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
-import ErrorAlert from '@/components/ErrorAlert';
-import api from '@/lib/apiUtils';
-import { API_ROUTES } from '@/config/routes';
+import { API_ROUTES } from '@/lib/api-routes';
+import { ApiService } from '@/services/apiService';
+import { AuthUser } from '@/types';
+import { TokenService } from '@/lib/axios';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 const VerifyEmail = () => {
   const params = useParams();
   const urlToken = params.token;
-
+  const {setUser} = useAuthContext()
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<HTMLInputElement[]>([]);
-  const [timeLeft, setTimeLeft] = useState(300); // 5-minute countdown
+  const [timeLeft, setTimeLeft] = useState(0); // 5-minute countdown
   const [canResend, setCanResend] = useState(false);
   const [token, setToken] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -24,8 +26,8 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     if (!urlToken) {
-      alert('You are not authorised to view this page');
-      router.push('/');
+      setError('You are not authorized to view this page');
+      setTimeout(() => router.push('/'), 300);
     } else {
       setToken(Array.isArray(urlToken) ? urlToken[0] : urlToken);
     }
@@ -105,40 +107,59 @@ const VerifyEmail = () => {
     await handleVerifySubmission(verificationCode);
   };
 
-  const handleVerifySubmission = async (verificationCode: string) => {
-    setLoading(true);
-    setError(null);
+const handleVerifySubmission = async (verificationCode: string) => {
+  setLoading(true);
+  setError(null);
 
-    try {
-      await api.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
-        verificationCode,
-        verificationToken: token,
-      });
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          'An error occurred during verification. Please try again.'
-      );
-      // Clear the code on error
-      setCode(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
-    } finally {
-      setLoading(false);
+  try {
+const response = await ApiService.post<{
+  user: AuthUser;
+  accessToken: string;
+}>(API_ROUTES.AUTH.VERIFY_EMAIL, {
+  verificationCode,
+  verificationToken: token,
+});
+
+    if (!response?.data) {
+      throw new Error('Invalid server response: missing data');
     }
-  };
+    setUser(response.data.user)
+    TokenService.setAccessToken(response.data.accessToken);
+    setSuccess(true);
+
+    setTimeout(() => {
+      router.push(`/${response.data?.user.role}`);
+    }, 2000);
+  } catch (err: any) {
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      'An error occurred during verification. Please try again.';
+
+    setError(errorMessage);
+    setCode(['', '', '', '', '', '']);
+    inputRefs.current[0]?.focus();
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleResendCode = async () => {
     setResendLoading(true);
     setError(null);
 
     try {
-      await api.post(API_ROUTES.AUTH.RESEND_VERIFICATION_CODE, {
+      const response = await ApiService.post<{verificationToken:string}>(API_ROUTES.AUTH.RESEND_VERIFICATION_CODE, {
         verificationToken: token,
       });
+
+      router.push(`/auth/verify-email/${response.data?.verificationToken}`)
+      
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          'An error occurred while resending the code.'
+          'An error occurred while resending the code. Please try again.'
       );
     } finally {
       setResendLoading(false);
@@ -212,8 +233,77 @@ const VerifyEmail = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-6">
-            <ErrorAlert message={error} />
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-red-800 text-sm font-medium">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors duration-200"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Resend Alert */}
+        {!error && resendLoading && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-white animate-spin"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 2v4m0 12v4m8-10h-4M6 12H2"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-blue-800 text-sm font-medium">
+                  Sending new verification code...
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -235,7 +325,7 @@ const VerifyEmail = () => {
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onFocus={(e) => e.target.select()}
-                className="w-12 h-12 text-center text-lg font-semibold text-sky-800 border-2 border-sky-200 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 bg-sky-50 shadow-sm hover:border-sky-300"
+                className="w-12 h-12 text-center text-lg font-semibold text-sky-800 border-2 border-sky-200 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all duration-200 bg-sky-50 shadow-sm hover:border-sky-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               />
             ))}

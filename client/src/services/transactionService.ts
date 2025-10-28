@@ -1,29 +1,29 @@
 import { ApiService } from './apiService';
 import { API_ROUTES } from '../lib/api-routes';
 import { 
-
   Transaction, 
   TransactionCreationDto, 
   TransactionResponse 
 } from '../types/transaction';
-import { ClientWalletWithAssociations, ClientWalletWithAssociationsResponse } from '@/types';
-    
+
 export class TransactionService {
   static async createTransaction(data: TransactionCreationDto): Promise<TransactionResponse> {
     return ApiService.post<Transaction>(API_ROUTES.TRANSACTIONS.CREATE, data);
   }
 
-
-  static async updateTransaction(id: number,data:Partial<Transaction>): Promise<TransactionResponse> {
-    return ApiService.put<Transaction>(API_ROUTES.TRANSACTIONS.UPDATE(id),data);
+  static async updateTransaction(id: number, data: Partial<Transaction>): Promise<TransactionResponse> {
+    return ApiService.put<Transaction>(API_ROUTES.TRANSACTIONS.UPDATE(id), data);
   }
 
-
-
-  static async getTransactionsByClientWalletId(clientWalletId: number): Promise<ClientWalletWithAssociationsResponse> {
-    return ApiService.get<ClientWalletWithAssociations>(API_ROUTES.TRANSACTIONS.GET_BY_CLIENT_WALLET_ID(clientWalletId));
+  static async updateTransactionStatus(id: number, data: Partial<Transaction>): Promise<TransactionResponse> {
+    return ApiService.put<Transaction>(API_ROUTES.TRANSACTIONS.UPDATE_STATUS(id), data);
   }
-  static async getTransactionsByClientId(clientId:number): Promise<TransactionResponse> {
+
+  static async getTransactionsByClientWalletId(clientWalletId: number): Promise<TransactionResponse> {
+    return ApiService.get<Transaction[]>(API_ROUTES.TRANSACTIONS.GET_BY_CLIENT_WALLET_ID(clientWalletId));
+  }
+
+  static async getTransactionsByClientId(clientId: number): Promise<TransactionResponse> {
     return ApiService.get<Transaction[]>(API_ROUTES.TRANSACTIONS.GET_BY_CLIENT_ID(clientId));
   }
 

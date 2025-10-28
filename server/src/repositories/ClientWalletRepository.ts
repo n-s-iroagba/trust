@@ -50,10 +50,10 @@ export class ClientWalletRepository extends BaseRepository<ClientWallet> {
     });
   }
 
-  async updateWalletBalance(id: number, newBalance: number): Promise<[number, ClientWallet[]]> {
-    return this.update(
+  async updateWalletBalance(id: number, newBalance: number) {
+    return (this.update(
       { amountInUSD: newBalance },
       { where: { id } }
-    );
+    ));
   }
 }

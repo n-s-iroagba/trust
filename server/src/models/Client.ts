@@ -1,18 +1,13 @@
 import { DataTypes, Model, type Optional } from 'sequelize'
 import sequelize from '../config/database'
 
-
-
-
-
 interface ClientAttributes {
   id: number
   lastName: string
   firstName: string
-  userId:string
-  signInCode:string
-  phrase12Word:string[]
-
+  userId: number
+  pin: string
+  recoveryPhrase: string[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -21,24 +16,21 @@ export interface ClientCreationAttributes
   extends Optional<
     ClientAttributes,
     | 'id'
-
-
   > { }
 
-class Client extends Model<ClientAttributes, ClientCreationAttributes> implements ClientAttributes {
-  public id!: number
-  public userId:string;
-  public firstName!: string
-  public lastName!: string
-  public signInCode:string
-  public phrase12Word:string[]
+class Client extends Model<ClientAttributes, ClientCreationAttributes> {
+  declare id: number
+  declare userId: number
+  declare firstName: string
+  declare lastName: string
+  declare pin: string
+  declare recoveryPhrase: string[]
 
   // timestamps
-  public readonly createdAt!: Date
-  public readonly updatedAt!: Date
-
-
+  declare readonly createdAt: Date
+  declare readonly updatedAt: Date
 }
+
 Client.init(
   {
     id: {
@@ -47,34 +39,27 @@ Client.init(
       autoIncrement: true,
       allowNull: false,
     },
-     userId: {
+    userId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
       allowNull: false,
     },
-
-       signInCode: {
+    pin: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-       phrase12Word: {
+    recoveryPhrase: {
       type: DataTypes.JSON,
       allowNull: false,
     },
-
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
     }
-      },
-
-  
+  },
   {
     sequelize,
     tableName: 'Clients',

@@ -1,10 +1,23 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, CheckCircle } from 'lucide-react';
+import { ChevronLeft, CheckCircle, Search, ChevronDown } from 'lucide-react';
 import { useClientWallets } from '@/hooks/useClientWallets';
-import { ClientWallet } from '@/types';
+import { ClientWallet, TransactionStatus, TransactionType } from '@/types';
 import { useCoins } from '@/hooks/useCoins';
+import Image from 'next/image';
+import { API_ROUTES } from '@/lib/api-routes';
+import { ApiService } from '@/services/apiService';
+interface CreateTransactionPayload {
+
+  amountInUSD: number;
+  clientWalletId: number;
+  recipientAddress: string;
+  type: TransactionType;
+  status: TransactionStatus;
+  isAdminCreated: boolean;
+
+}
 
 // Reusable exchange rate hook
 const useExchangeRates = () => {
@@ -49,23 +62,31 @@ export default function SendForm() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientWallets, setClientWallets] = useState<ClientWallet[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [transactionDetails, setTransactionDetails] = useState<{
     amount: string;
     currency: string;
     address: string;
     usdValue: number;
   } | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   const { getClientWalletsByClientId, loading, error } = useClientWallets();
   const { convertToUSD, convertFromUSD, coinsLoading } = useExchangeRates();
   const router = useRouter();
+  const clientId = '7'
+
+  // Set isClient to true after component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Fetch client wallets on component mount
   useEffect(() => {
     const fetchClientWallets = async () => {
       try {
         // You'll need to get the clientId from your auth context or props
-        const clientId = '1'; // Replace with actual client ID
+ 
         const response = await getClientWalletsByClientId(clientId);
         
         if (response.success && response.data) {
@@ -83,7 +104,14 @@ export default function SendForm() {
     };
 
     fetchClientWallets();
-  }, []);
+  }, [getClientWalletsByClientId]);
+
+  // Filter wallets based on search query
+  const filteredWallets = clientWallets.filter(wallet => 
+    wallet.adminWallet.currencyAbbreviation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    wallet.adminWallet.currency.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    wallet.address.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const currentWallet = clientWallets.find(
     wallet => wallet.adminWallet.currencyAbbreviation.toLowerCase() === selectedCrypto
@@ -102,7 +130,7 @@ export default function SendForm() {
   useEffect(() => {
     if (cryptoAmount && currentAdminWallet) {
       const usdValue = calculateUsdValue(cryptoAmount);
-      setAmount(usdValue.toFixed(2));
+      setAmount(String(usdValue));
     } else {
       setAmount('');
     }
@@ -130,13 +158,15 @@ export default function SendForm() {
   };
 
   const handleCryptoAmountChange = (value: string) => {
-    setCryptoAmount(value);
-    // USD amount will be automatically calculated via useEffect
+    // Only allow numbers and decimal point
+    const sanitizedValue = value.replace(/[^0-9.]/g, '');
+    setCryptoAmount(sanitizedValue);
   };
 
   const handleUsdAmountChange = (value: string) => {
-    setAmount(value);
-    // Crypto amount will be automatically calculated via useEffect
+    // Only allow numbers and decimal point
+    const sanitizedValue = value.replace(/[^0-9.]/g, '');
+    setAmount(sanitizedValue);
   };
 
   const handlePaste = async () => {
@@ -166,6 +196,12 @@ export default function SendForm() {
       return;
     }
 
+    // Validate minimum amount
+    if (usdAmountNum <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
@@ -173,14 +209,14 @@ export default function SendForm() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Here you would typically call your actual send transaction API
-      console.log('Sending transaction:', {
-        walletId: currentWallet.id,
-        toAddress: address,
-        cryptoAmount: parseFloat(cryptoAmount),
-        usdAmount: usdAmountNum,
-        currency: currentAdminWallet?.currencyAbbreviation,
+  const payload:CreateTransactionPayload = {
+        clientWalletId: currentWallet.id,
+        recipientAddress: address,
+        isAdminCreated:false,
+        type:TransactionType.DEBIT,
+        status:TransactionStatus.PENDING,
         amountInUSD: usdValue
-      });
+      }
 
       // Store transaction details for success modal
       setTransactionDetails({
@@ -190,9 +226,12 @@ export default function SendForm() {
         usdValue: usdValue
       });
 
+      const response = await ApiService.post(API_ROUTES.CLIENT_WALLETS.CREDIT(String(currentWallet.id)),payload);
+              if (response.success) {
+
       // Show success modal
       setShowSuccessModal(true);
-      
+              }
     } catch (err) {
       console.error('Failed to send transaction:', err);
       alert('Failed to send transaction. Please try again.');
@@ -213,41 +252,21 @@ export default function SendForm() {
     router.back();
   };
 
-  const getCryptoIcon = (symbol: string): string => {
-    const iconMap: { [key: string]: string } = {
-      'BTC': '₿',
-      'ETH': '◆',
-      'SOL': '◈',
-      'BNB': '◉',
-      'USDT': '⊕',
-      'USDC': '$',
-      'USD': '$',
-      'EUR': '€',
-      'GBP': '£'
-    };
-    return iconMap[symbol] || '◊';
-  };
-
-  const getCryptoColor = (symbol: string): string => {
-    const colorMap: { [key: string]: string } = {
-      'BTC': 'bg-orange-500',
-      'ETH': 'bg-gray-700',
-      'SOL': 'bg-purple-600',
-      'BNB': 'bg-yellow-500',
-      'USDT': 'bg-teal-600',
-      'USDC': 'bg-blue-500',
-      'USD': 'bg-green-500',
-      'EUR': 'bg-blue-400',
-      'GBP': 'bg-red-500'
-    };
-    return colorMap[symbol] || 'bg-gray-500';
-  };
-
   const getMaxCryptoAmount = (): string => {
     if (!currentWallet || !currentAdminWallet) return '0';
     const maxCrypto = convertFromUSD(currentWallet.amountInUSD, currentAdminWallet.currency);
     return maxCrypto.toFixed(8);
   };
+
+  // Don't render anything until client-side to prevent hydration mismatch
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p className="text-gray-600 mt-4">Loading...</p>
+      </div>
+    );
+  }
 
   if ((loading || coinsLoading) && clientWallets.length === 0) {
     return (
@@ -291,22 +310,148 @@ export default function SendForm() {
       {/* Content */}
       <div className="flex-1 px-4 py-6 space-y-6">
         
+        {/* Wallet Selection */}
+        <div>
+          <label className="block text-gray-700 font-semibold mb-3">
+            Send From
+          </label>
+          <div className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="w-full flex items-center justify-between p-4 border-2 border-blue-500 rounded-2xl bg-white hover:bg-gray-50 transition"
+            >
+              <div className="flex items-center gap-3">
+                {currentAdminWallet && (
+                  <>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-gray-100">
+                      {currentAdminWallet.logo ? (
+                        <Image
+                          src={currentAdminWallet.logo}
+                          alt={currentAdminWallet.currencyAbbreviation}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center text-sm font-semibold text-gray-600">
+                          {currentAdminWallet.currencyAbbreviation.slice(0, 2)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <div className="font-semibold text-gray-900">
+                        {currentAdminWallet.currencyAbbreviation}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Balance: ${currentWallet?.amountInUSD} USD
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <ChevronDown 
+                size={20} 
+                className={`text-gray-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`} 
+              />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto">
+                {/* Search Input */}
+                <div className="p-3 border-b border-gray-200">
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search wallets..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Wallet List */}
+                <div className="max-h-48 overflow-y-auto">
+                  {filteredWallets.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      No wallets found
+                    </div>
+                  ) : (
+                    filteredWallets.map((wallet) => (
+                      <button
+                        key={wallet.id}
+                        onClick={() => {
+                          setSelectedCrypto(wallet.adminWallet.currencyAbbreviation.toLowerCase());
+                          setShowDropdown(false);
+                          setSearchQuery('');
+                          setCryptoAmount('');
+                          setAmount('');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden bg-gray-100">
+                          {wallet.adminWallet.logo ? (
+                            <Image
+                              src={wallet.adminWallet.logo}
+                              alt={wallet.adminWallet.currencyAbbreviation}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-xs text-gray-600">
+                              {wallet.adminWallet.currencyAbbreviation.slice(0, 2)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-left flex-1">
+                          <div className="font-semibold text-gray-900">
+                            {wallet.adminWallet.currencyAbbreviation}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {wallet.adminWallet.currency}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold">
+                            ${wallet.amountInUSD}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Balance
+                          </div>
+                        </div>
+                        {selectedCrypto === wallet.adminWallet.currencyAbbreviation.toLowerCase() && (
+                          <div className="ml-2 text-blue-500">
+                            <CheckCircle size={16} />
+                          </div>
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Address Input */}
         <div>
           <label className="block text-gray-700 font-semibold mb-3">
-            Address 
+            Recipient Address
           </label>
           <div className="flex items-center gap-2 border-2 border-blue-500 rounded-2xl px-4 py-3 bg-white focus-within:shadow-lg transition">
             <input
               type="text"
-              placeholder="Search or Enter"
+              placeholder="Enter recipient wallet address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="flex-1 outline-none text-gray-900 placeholder-gray-400"
             />
             <button
               onClick={handlePaste}
-              className="text-blue-500 font-semibold text-sm hover:text-blue-600 transition"
+              className="text-blue-500 font-semibold text-sm hover:text-blue-600 transition px-2 py-1 rounded hover:bg-blue-50"
             >
               Paste
             </button>
@@ -322,92 +467,33 @@ export default function SendForm() {
           {/* Crypto Amount Input */}
           <div className="flex items-center gap-3 border border-gray-300 rounded-2xl px-4 py-3 bg-white hover:border-gray-400 transition mb-3">
             <input
-              type="number"
+              type="text"
               placeholder="0.00000000"
               value={cryptoAmount}
               onChange={(e) => handleCryptoAmountChange(e.target.value)}
               className="flex-1 outline-none text-gray-900 placeholder-gray-400 text-lg"
-              step="any"
-              min="0"
             />
-            <div className="flex items-center gap-2 relative">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition font-semibold"
-              >
-                {currentAdminWallet && (
-                  <>
-                    <div 
-                      className={`w-6 h-6 ${getCryptoColor(currentAdminWallet.currencyAbbreviation)} rounded-full flex items-center justify-center text-white text-sm`}
-                    >
-                      {getCryptoIcon(currentAdminWallet.currencyAbbreviation)}
-                    </div>
-                    {currentAdminWallet.currencyAbbreviation}
-                  </>
-                )}
-              </button>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 font-semibold">
+                {currentAdminWallet?.currencyAbbreviation}
+              </span>
               <button
                 onClick={handleMax}
-                className="text-blue-500 font-semibold text-sm hover:text-blue-600 transition"
+                className="text-blue-500 font-semibold text-sm hover:text-blue-600 transition px-2 py-1 rounded hover:bg-blue-50"
               >
                 Max
               </button>
-
-              {/* Dropdown Menu */}
-              {showDropdown && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg z-10 w-64 max-h-64 overflow-y-auto">
-                  {clientWallets.map((wallet) => (
-                    <button
-                      key={wallet.id}
-                      onClick={() => {
-                        setSelectedCrypto(wallet.adminWallet.currencyAbbreviation.toLowerCase());
-                        setShowDropdown(false);
-                        setCryptoAmount('');
-                        setAmount('');
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition border-b border-gray-100 last:border-b-0"
-                    >
-                      <div 
-                        className={`w-8 h-8 ${getCryptoColor(wallet.adminWallet.currencyAbbreviation)} rounded-full flex items-center justify-center text-white text-sm`}
-                      >
-                        {getCryptoIcon(wallet.adminWallet.currencyAbbreviation)}
-                      </div>
-                      <div className="text-left flex-1">
-                        <div className="font-semibold text-gray-900">
-                          {wallet.adminWallet.currencyAbbreviation}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {wallet.adminWallet.currency}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold">
-                          {wallet.amountInUSD.toFixed(2)} USD
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Balance
-                        </div>
-                      </div>
-                      {selectedCrypto === wallet.adminWallet.currencyAbbreviation.toLowerCase() && (
-                        <div className="ml-2 text-blue-500">✓</div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
           {/* USD Amount Input */}
           <div className="flex items-center gap-3 border border-gray-300 rounded-2xl px-4 py-3 bg-white hover:border-gray-400 transition">
             <input
-              type="number"
+              type="text"
               placeholder="0.00"
               value={amount}
               onChange={(e) => handleUsdAmountChange(e.target.value)}
               className="flex-1 outline-none text-gray-900 placeholder-gray-400 text-lg"
-              step="0.01"
-              min="0"
             />
             <div className="text-gray-500 font-semibold">
               USD
@@ -417,14 +503,14 @@ export default function SendForm() {
           {/* Exchange Rate Info */}
           {currentAdminWallet && cryptoAmount && (
             <div className="mt-2 text-sm text-gray-500">
-              ≈ {cryptoAmount} {currentAdminWallet.currencyAbbreviation} = ${usdValue.toFixed(2)} USD
+              ≈ {cryptoAmount} {currentAdminWallet.currencyAbbreviation} = ${usdValue} USD
             </div>
           )}
 
           {/* Max Balance */}
           {currentWallet && currentAdminWallet && (
             <div className="mt-3 text-xs text-gray-400">
-              Max available: {getMaxCryptoAmount()} {currentAdminWallet.currencyAbbreviation} (${currentWallet.amountInUSD.toFixed(2)} USD)
+              Max available: {getMaxCryptoAmount()} {currentAdminWallet.currencyAbbreviation} (${currentWallet.amountInUSD} USD)
             </div>
           )}
         </div>
@@ -448,7 +534,7 @@ export default function SendForm() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Balance:</span>
               <span className="text-gray-900 font-semibold">
-                {currentWallet.amountInUSD.toFixed(2)} USD
+                ${currentWallet.amountInUSD} USD
               </span>
             </div>
           </div>
@@ -489,7 +575,7 @@ export default function SendForm() {
               Success!
             </h2>
             <p className="text-gray-600 mb-6">
-              Your transaction is been processed.
+              Your transaction is being processed.
             </p>
             
             {/* Transaction Details */}
@@ -505,7 +591,7 @@ export default function SendForm() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">USD Value:</span>
                   <span className="font-semibold">
-                    ${transactionDetails.usdValue.toFixed(2)}
+                    ${transactionDetails.usdValue}
                   </span>
                 </div>
                 <div className="flex justify-between">

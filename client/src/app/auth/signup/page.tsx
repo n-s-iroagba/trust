@@ -12,10 +12,9 @@ import {
   Building2,
   Phone,
 } from 'lucide-react';
-import api from '@/lib/apiUtils';
-import { API_ROUTES } from '@/config/routes';
+import { ApiService } from '@/services/apiService';
+import { API_ROUTES } from '@/lib/api-routes';
 import { useRouter } from 'next/navigation';
-import { handleError } from '@/utils/handleError';
 
 // ----------------------
 // Types
@@ -176,11 +175,12 @@ export default function SignupForm() {
         advertiser: advertiserData,
       };
 
-      const response = await api.post(API_ROUTES.AUTH.SIGNUP, payload);
+      const response = await ApiService.post<{verificationToken:string}>(API_ROUTES.AUTH.ADMIN_SIGNUP, payload);
 
-      router.push(`/auth/verify-email/${response.data.verificationToken}`);
+      router.push(`/auth/verify-email/${response.data?.verificationToken}`);
     } catch (err) {
-      handleError(err, setError);
+      console.error('Sign up error',err)
+       setError('Registeration error occured')
     } finally {
       setLoading(false);
     }

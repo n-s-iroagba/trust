@@ -9,7 +9,7 @@ export interface Client {
   firstName: string;
   signInCode: string;
   phrase12Word: string[];
-  wallets?: ClientWallet[];
+  clientWallets?: ClientWallet[];
   createdAt?: Date;
   updatedAt?: Date;
 }

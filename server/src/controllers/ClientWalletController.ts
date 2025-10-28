@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ClientWalletService, ClientWalletCreationDto, CreditDebitDto } from '../services/ClientWalletService';
 import { ResponseHelpers } from '../services/utils/responseHelpers';
 import logger from '../services/logger/winstonLogger';
+import ClientWallet from '../models/ClientWallet';
 
 export class ClientWalletController {
   private clientWalletService: ClientWalletService;
@@ -24,7 +25,7 @@ export class ClientWalletController {
 
   getAllClientWallets = async (req: Request, res: Response): Promise<void> => {
     try {
-      const clientWallets = await this.clientWalletService.getAllClientWallets();
+      const clientWallets = await this.clientWalletService.getAll();
       
       res.status(200).json(ResponseHelpers.success(clientWallets, 'Client wallets fetched successfully'));
     } catch (error: any) {
@@ -34,9 +35,12 @@ export class ClientWalletController {
   };
 
   getClientWalletsByClientId = async (req: Request, res: Response): Promise<void> => {
+    console.log('qqqqqqqqqqqqqqqqqqqqqqs')
     try {
       const clientId = req.params.clientId;
-      const clientWallets = await this.clientWalletService.getClientWalletsByClientId(clientId);
+      const W = await ClientWallet.findAll()
+      console.log(W)
+      const clientWallets = await this.clientWalletService.getAllClientWallets(clientId);
       
       res.status(200).json(ResponseHelpers.success(clientWallets, 'Client wallets fetched successfully'));
     } catch (error: any) {
@@ -70,16 +74,5 @@ export class ClientWalletController {
     }
   };
 
-  debitWallet = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const clientWalletId = parseInt(req.params.id);
-      const debitDto: CreditDebitDto = req.body;
-      const result = await this.clientWalletService.debitWallet(clientWalletId, debitDto);
-      
-      res.status(200).json(ResponseHelpers.success(result, 'Wallet debited successfully'));
-    } catch (error: any) {
-      logger.error('Debit wallet error:', error);
-      res.status(error.statusCode || 500).json(ResponseHelpers.error(error.message));
-    }
-  };
+
 }
