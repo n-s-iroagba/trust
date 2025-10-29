@@ -34,92 +34,110 @@ export default function TrustWalletHomepage() {
       </header>
 
       {/* Hero Section */}
-<section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+<section className="pt-16 md:pt-24 pb-8 md:pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
   <div className="max-w-7xl mx-auto">
-    <div className="grid lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+    <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+      {/* Text Content */}
+      <div className="text-center lg:text-left order-2 lg:order-1">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
           True crypto ownership. Powerful Web3 experiences
         </h1>
-        <p className="text-lg text-gray-600 mb-8">
+        <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0">
           Unlock the power of your cryptocurrency assets and explore the world of Web3 with Trust Wallet.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start">
           <button
             onClick={() => router.push('/auth/register')}
-            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer"
+            className="px-6 md:px-8 py-3 md:py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base"
           >
-            <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+            <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-blue-600 rounded"></div>
             Create Account
           </button>
           <button
             onClick={() => router.push('/auth/login')}
-            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer"
+            className="px-6 md:px-8 py-3 md:py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base"
           >
-            <div className="w-5 h-5 border-2 border-blue-600 rounded"></div>
+            <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-blue-600 rounded"></div>
             Login
           </button>
         </div>
       </div>
-            <div className="relative">
-              <div className="relative z-10 flex items-center justify-center gap-4">
-                <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
-                  <div className="bg-gray-900 rounded-2xl p-6 w-64">
-                    <div className="text-white text-sm mb-2">My Wallet 1</div>
-                    <div className="text-white text-3xl font-bold mb-4">$1,228.20</div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                        <span>Ethereum</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                        <span>Polygon</span>
-                      </div>
+
+      {/* Wallet Cards */}
+      <div className="order-1 lg:order-2 mb-8 lg:mb-0">
+        <div className="relative">
+          {/* Main Card */}
+          <div className="relative z-20 flex justify-center lg:justify-end">
+            <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-xl w-full max-w-xs md:max-w-sm">
+              <div className="bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6">
+                <div className="text-white text-sm mb-2">My Wallet 1</div>
+                <div className="text-white text-2xl md:text-3xl font-bold mb-3 md:mb-4">$1,228.20</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-white text-xs md:text-sm">
+                    <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-500 rounded-full"></div>
+                    <span>Ethereum</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white text-xs md:text-sm">
+                    <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full"></div>
+                    <span>Polygon</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Secondary Cards - Hidden on mobile, shown on larger screens */}
+          <div className="hidden md:block">
+            <div className="absolute -left-4 -bottom-8 z-10 opacity-80 scale-90">
+              <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-4 rounded-2xl shadow-lg">
+                <div className="bg-gray-900 rounded-xl p-4 w-56">
+                  <div className="text-white text-xs mb-2">My Wallet 2</div>
+                  <div className="text-white text-xl font-bold mb-3">$11,220.20</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-white text-xs">
+                      <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
+                      <span>Bitcoin</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white text-xs">
+                      <div className="w-5 h-5 bg-green-500 rounded-full"></div>
+                      <span>Polygon</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="relative z-10 flex items-center justify-center gap-4">
-                <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
-                  <div className="bg-gray-900 rounded-2xl p-6 w-64">
-                    <div className="text-white text-sm mb-2">My Wallet 2</div>
-                    <div className="text-white text-3xl font-bold mb-4">$11,220.20</div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                        <span>Bitcoin</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                        <span>Polygon</span>
-                      </div>
+            </div>
+            
+            <div className="absolute -right-4 -top-8 z-10 opacity-80 scale-90">
+              <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-4 rounded-2xl shadow-lg">
+                <div className="bg-gray-900 rounded-xl p-4 w-56">
+                  <div className="text-white text-xs mb-2">My Wallet 3</div>
+                  <div className="text-white text-xl font-bold mb-3">$1,000.20</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-white text-xs">
+                      <div className="w-5 h-5 bg-blue-500 rounded-full"></div>
+                      <span>USDT</span>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div className="relative z-10 flex items-center justify-center gap-4">
-                <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-6 rounded-3xl shadow-xl">
-                  <div className="bg-gray-900 rounded-2xl p-6 w-64">
-                    <div className="text-white text-sm mb-2">My Wallet 3</div>
-                    <div className="text-white text-3xl font-bold mb-4">$1,000.20</div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                        <span>USDT</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                        <span>Polygon</span>
-                      </div>
+                    <div className="flex items-center gap-2 text-white text-xs">
+                      <div className="w-5 h-5 bg-green-500 rounded-full"></div>
+                      <span>Polygon</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Mobile-only carousel indicator */}
+          <div className="md:hidden flex justify-center mt-4 gap-2">
+            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+          </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Trust Indicators */}
       <section className="py-12 px-4 bg-gray-50">
