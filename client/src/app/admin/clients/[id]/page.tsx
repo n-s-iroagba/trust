@@ -13,8 +13,8 @@ export default function ClientWalletsPage() {
   const clientId = 7
   const { 
     getClientWalletsByClientId, 
-    creditWallet, 
-    debitWallet, 
+
+ 
     loading 
   } = useClientWallets();
   
@@ -94,47 +94,8 @@ export default function ClientWalletsPage() {
 
 
 
-  const handleCredit = async (walletId: number, data: CreditDebitDto) => {
-    try {
-      setError(null);
-      setSuccess(null);
-      const response = await creditWallet(walletId, data);
-      
-      if (response.success) {
-        setSuccess('Wallet credited successfully!');
-        setShowCreditDebitModal(false);
-        setSelectedWallet(null);
-        await loadWallets();
-      } else {
-        setError(response.message || 'Failed to credit wallet');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to credit wallet';
-      setError(errorMessage);
-      console.error('Failed to credit wallet:', err);
-    }
-  };
 
-  const handleDebit = async (walletId: number, data: CreditDebitDto) => {
-    try {
-      setError(null);
-      setSuccess(null);
-      const response = await debitWallet(walletId, data);
-      
-      if (response.success) {
-        setSuccess('Wallet debited successfully!');
-        setShowCreditDebitModal(false);
-        setSelectedWallet(null);
-        await loadWallets();
-      } else {
-        setError(response.message || 'Failed to debit wallet');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to debit wallet';
-      setError(errorMessage);
-      console.error('Failed to debit wallet:', err);
-    }
-  };
+
 
   const handleManageWallet = (wallet: ClientWallet) => {
     setSelectedWallet(wallet);
