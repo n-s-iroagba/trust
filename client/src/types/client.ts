@@ -28,5 +28,4 @@ export interface ClientUpdateDto {
   phrase12Word?: string[];
 }
 
-export interface ClientResponse extends ApiResponse<Client> {}
-export interface ClientsResponse extends ApiResponse<Client[]> {}
+export type ClientResponse = ApiResponse<Client|Client[]> 

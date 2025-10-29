@@ -406,7 +406,7 @@ const fetchTransactions = async (walletId: number) => {
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No Wallets</h3>
-                      <p className="text-gray-500">You don't have any wallets yet.</p>
+                      <p className="text-gray-500">You don&apos;t have any wallets yet.</p>
                     </div>
                   ) : (
                     wallets.map((wallet) => (
@@ -475,7 +475,7 @@ const fetchTransactions = async (walletId: number) => {
                         <ArrowRight className="w-16 h-16 mx-auto" />
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No Transactions</h3>
-                      <p className="text-gray-500">You don't have any transactions for this wallet yet.</p>
+                      <p className="text-gray-500">You don&apos;t have any transactions for this wallet yet.</p>
                     </div>
                   ) : (
                     <>
@@ -540,7 +540,7 @@ const fetchTransactions = async (walletId: number) => {
                         <Clock className="w-16 h-16 mx-auto" />
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Transactions</h3>
-                      <p className="text-gray-500">You don't have any pending transactions for this wallet.</p>
+                      <p className="text-gray-500">You don&apos;t have any pending transactions for this wallet.</p>
                     </div>
                   ) : (
                     <>

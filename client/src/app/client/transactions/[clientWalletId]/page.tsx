@@ -6,6 +6,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useCoins } from '@/hooks/useCoins';
 import { ClientWalletWithAssociations, Transaction, TransactionStatus, TransactionType } from '@/types';
 import { useClientWallets } from '@/hooks/useClientWallets';
+import Image from 'next/image';
 
 // Reusable exchange rate hook
 const useExchangeRates = () => {
@@ -250,7 +251,7 @@ export default function TransactionsPage() {
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   {coinData.image && (
-                    <img src={coinData.image} alt={clientWallet?.adminWallet.logo} className="w-8 h-8 rounded-full" />
+                    <Image fill  src={coinData.image} alt='Crypto logo' className="w-8 h-8 rounded-full" />
                   )}
                   <div>
                     <p className="text-lg font-bold text-gray-900">
