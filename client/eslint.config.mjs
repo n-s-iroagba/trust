@@ -21,14 +21,14 @@ const eslintConfig = [
     ],
   },
   {
-    // rules: {
-    //     "react-hooks/exhaustive-deps": "off",
-    //   "@typescript-eslint/no-explicit-any": "off",
-    //   "@typescript-eslint/no-unused-vars": "off", // Make unused vars warnings instead of errors
-    //   "@typescript-eslint/explicit-function-return-type": "off",
-    //   "@typescript-eslint/explicit-module-boundary-types": "off",
+    rules: {
+        "react-hooks/exhaustive-deps": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off", // Make unused vars warnings instead of errors
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
    
-    // }
+    }
   }
 ];
 
