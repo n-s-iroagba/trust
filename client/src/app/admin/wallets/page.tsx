@@ -84,7 +84,7 @@ export default function AdminWalletsPage() {
     try {
       setFormError(null);
       const walletData: AdminWalletCreationDto = {
-        id: 0, // This will be set by backend
+      
         currencyAbbreviation: selectedCoin.symbol.toUpperCase(),
         logo: selectedCoin.image,
         currency: selectedCoin.name,
