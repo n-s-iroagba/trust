@@ -13,7 +13,7 @@ export interface AdminWallet {
   updatedAt?: Date;
 }
 export interface AdminWalletCreationDto {
-  id: number;
+
   currencyAbbreviation: string;
   logo: string;
   clientReceivingAddress:string
