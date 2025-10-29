@@ -5,6 +5,7 @@ import { AdminWallet, AdminWalletCreationDto, AdminWalletUpdateDto } from '../..
 import AdminWalletList from '../../../components/AdminWalletList';
 import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
 import { useCoins } from '@/hooks/useCoins';
+import Image from 'next/image';
 
 interface Coin {
   id: string;
@@ -341,7 +342,7 @@ export default function AdminWalletsPage() {
                                 onClick={() => handleCoinSelect(coin)}
                               >
                                 <div className="flex items-center space-x-3">
-                                  <img src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full" />
+                                  <Image fill src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full" />
                                   <div className="flex-1">
                                     <div className="flex justify-between items-center">
                                       <span className="font-medium text-gray-900">{coin.name}</span>
@@ -364,7 +365,7 @@ export default function AdminWalletsPage() {
                       <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                         <h4 className="font-medium text-green-800 mb-2">Selected Coin</h4>
                         <div className="flex items-center space-x-3">
-                          <img src={selectedCoin.image} alt={selectedCoin.name} className="w-8 h-8 rounded-full" />
+                          <Image fill src={selectedCoin.image} alt={selectedCoin.name} className="w-8 h-8 rounded-full" />
                           <div>
                             <p className="font-medium text-green-900">{selectedCoin.name}</p>
                             <p className="text-sm text-green-700">{selectedCoin.symbol.toUpperCase()}</p>
